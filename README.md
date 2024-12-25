@@ -1,0 +1,1 @@
+# Blank CRM - infrastructure
