@@ -68,35 +68,6 @@ CREATE TYPE chat_session_status AS ENUM (
     'closed',
     'archived'
 );
--- Enhance webhooks with event types
-CREATE TYPE webhook_event_type AS ENUM (
-    'contact.created',
-    'contact.updated',
-    'contact.archived',
-    'ticket.created',
-    'ticket.updated',
-    'ticket.status_changed',
-    'ticket.assigned'
-);
-
--- Now tables can reference these types
--- Example modification to users table:
-CREATE TABLE IF NOT EXISTS public.users (
-    id BIGSERIAL PRIMARY KEY,
-    company_id BIGINT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK (role IN ('customer','agent','admin')),
-    full_name TEXT NOT NULL,
-    email CITEXT UNIQUE NOT NULL,
-    -- For demonstration, password stored as text. Use secure hashing in practice.
-    password TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    archived_at TIMESTAMPTZ,
-    status user_status_type DEFAULT 'active',  -- Use the enum
-    team_id BIGINT REFERENCES public.teams(id) ON DELETE SET NULL,
-    last_login_ip INET  -- Add INET field for IP tracking
-);
-
 -- ============================================================================
 -- 1. Companies Table
 --    - Represents a tenant or organization. 
@@ -133,12 +104,39 @@ ON public.companies
 FOR EACH ROW
 EXECUTE PROCEDURE public.update_timestamp();
 
+-- Add teams structure
+CREATE TABLE IF NOT EXISTS public.teams (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(company_id, name)
+);
+
 -- ============================================================================
 -- 2. Users Table
 --    - Users belong to a company and have a role (customer, agent, admin).
 --    - The structure supports multiple roles. 
 --      Relationship: many users can belong to one company.
 -- ============================================================================
+CREATE TABLE IF NOT EXISTS public.users (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('customer','agent','admin')),
+    full_name TEXT NOT NULL,
+    email CITEXT UNIQUE NOT NULL,
+    -- For demonstration, password stored as text. Use secure hashing in practice.
+    password TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    archived_at TIMESTAMPTZ,
+    status user_status_type DEFAULT 'active',  -- Use the enum
+    team_id BIGINT REFERENCES public.teams(id) ON DELETE SET NULL,
+    last_login_ip INET  -- Add INET field for IP tracking
+);
+
 CREATE TRIGGER users_updated_at
 BEFORE UPDATE
 ON public.users
@@ -387,17 +385,6 @@ EXECUTE PROCEDURE public.update_timestamp();
 ALTER TABLE public.custom_fields 
 ADD CONSTRAINT unique_custom_field_per_company 
 UNIQUE (company_id, table_name, field_name);
-
--- Add teams structure
-CREATE TABLE IF NOT EXISTS public.teams (
-    id BIGSERIAL PRIMARY KEY,
-    company_id BIGINT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(company_id, name)
-);
 
 -- Add tags system
 CREATE TABLE IF NOT EXISTS public.tags (
