@@ -59,4 +59,16 @@ export class CompanyRepository implements ICompanyRepository {
 
     if (error) throw error;
   }
+
+  async updateSettings(id: number, settings: Record<string, any>): Promise<Company> {
+    const { data: company, error } = await this.supabase
+      .from('companies')
+      .update({ settings })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return company;
+  }
 }

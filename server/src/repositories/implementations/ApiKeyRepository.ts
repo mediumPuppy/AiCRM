@@ -8,7 +8,7 @@ export class ApiKeyRepository implements IApiKeyRepository {
   private readonly tableName = 'api_keys';
 
   constructor(private readonly supabase: SupabaseClient) {
-    console.log('ApiKeyRepository constructed with:', supabase);
+    console.log("supabase is supa based");
   }
 
   async create(data: CreateApiKeyDTO): Promise<ApiKey> {

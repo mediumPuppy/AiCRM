@@ -43,10 +43,8 @@ const generateApiKey: RequestHandler = async (req, res) => {
       expires_at: null
     });
     
-    console.log('Route handler result:', result);
     res.status(201).json(result);
   } catch (error) {
-    console.error('Route handler error:', error);
     res.status(500).json({ error: 'Failed to generate API key' });
   }
 };

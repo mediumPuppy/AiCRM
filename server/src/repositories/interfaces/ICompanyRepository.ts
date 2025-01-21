@@ -6,4 +6,5 @@ export interface ICompanyRepository {
   findAll(): Promise<Company[]>;
   update(id: number, data: UpdateCompanyDTO): Promise<Company>;
   delete(id: number): Promise<void>;
+  updateSettings(id: number, settings: Record<string, any>): Promise<Company>;
 }
