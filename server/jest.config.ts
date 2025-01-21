@@ -9,5 +9,9 @@ export default {
     moduleNameMapper: {
       '^@/(.*)$': '<rootDir>/src/$1'
     },
-    moduleDirectories: ['node_modules', 'src']
+    moduleDirectories: ['node_modules', 'src'],
+    // Temporarily exclude specific test files
+    testPathIgnorePatterns: [
+      '/node_modules/',
+    ]
 };

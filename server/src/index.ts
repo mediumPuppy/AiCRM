@@ -3,18 +3,38 @@ import { specs, swaggerUi } from './swagger'
 
 import apiKeysRouter from './api/routes/api-keys'
 import articleRoutes from './api/routes/articles'
+import attachmentRoutes from './api/routes/attachments'
 import chatSessionRoutes from './api/routes/chat-sessions'
 import companyRoutes from './api/routes/companies'
 import contactRoutes from './api/routes/contacts'
+import customFieldRoutes from './api/routes/custom-fields'
+import noteRoutes from './api/routes/notes'
+import portalSessionRoutes from './api/routes/portal-sessions'
+import tagRoutes from './api/routes/tags'
+import teamRoutes from './api/routes/teams'
+import ticketRoutes from './api/routes/tickets'
+import userRoutes from './api/routes/users'
+import webhookRoutes from './api/routes/webhooks'
+
 const app = express()
 app.use(express.json())
 
 // API Routes
 app.use('/api/api-keys', apiKeysRouter)
 app.use('/api/articles', articleRoutes)
+app.use('/api/attachments', attachmentRoutes)
 app.use('/api/chat/sessions', chatSessionRoutes)
 app.use('/api/companies', companyRoutes)
 app.use('/api/contacts', contactRoutes)
+app.use('/api/custom-fields', customFieldRoutes)
+app.use('/api/notes', noteRoutes)
+app.use('/api/portal-sessions', portalSessionRoutes)
+app.use('/api/tags', tagRoutes)
+app.use('/api/teams', teamRoutes)
+app.use('/api/tickets', ticketRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/webhooks', webhookRoutes)
+
 // Add before your routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
