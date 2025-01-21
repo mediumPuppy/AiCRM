@@ -5,7 +5,7 @@ import apiKeysRouter from './api/routes/api-keys'
 import articleRoutes from './api/routes/articles'
 import chatSessionRoutes from './api/routes/chat-sessions'
 import companyRoutes from './api/routes/companies'
-
+import contactRoutes from './api/routes/contacts'
 const app = express()
 app.use(express.json())
 
@@ -14,6 +14,7 @@ app.use('/api/api-keys', apiKeysRouter)
 app.use('/api/articles', articleRoutes)
 app.use('/api/chat/sessions', chatSessionRoutes)
 app.use('/api/companies', companyRoutes)
+app.use('/api/contacts', contactRoutes)
 // Add before your routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 

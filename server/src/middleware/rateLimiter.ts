@@ -22,4 +22,16 @@ export const articleWriteLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10000, // Limit each IP to 10000 write operations per hour
   message: { error: 'Too many article write attempts, please try again later' }
+});
+
+export const contactReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10000, // Limit each IP to 10000 requests per window
+  message: { error: 'Too many contact read attempts, please try again later' }
+});
+
+export const contactWriteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // Limit each IP to 1000 write operations per hour
+  message: { error: 'Too many contact write attempts, please try again later' }
 }); 
