@@ -8,15 +8,37 @@ export class ArticleRepository implements IArticleRepository {
 
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async create(data: CreateArticleDTO): Promise<Article> {
-    const { data: article, error } = await this.supabase
+  async findAll({ page, limit, category, published }: {
+    page: number;
+    limit: number;
+    category?: string;
+    published?: boolean;
+  }): Promise<{ articles: Article[]; total: number }> {
+    let query = this.supabase
       .from(this.tableName)
-      .insert({ ...data, revision: 1 })
-      .select()
-      .single();
+      .select('*', { count: 'exact' });
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    if (typeof published === 'boolean') {
+      query = query.eq('published', published);
+    }
+
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+
+    const { data: articles, count, error } = await query
+      .range(start, end)
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return new ArticleEntity(article);
+
+    return {
+      articles: articles.map(article => new ArticleEntity(article)),
+      total: count || 0
+    };
   }
 
   async findById(id: number): Promise<Article | null> {
@@ -71,6 +93,28 @@ export class ArticleRepository implements IArticleRepository {
 
     if (error) throw error;
     return articles.map(article => new ArticleEntity(article));
+  }
+
+  async search(query: string): Promise<Article[]> {
+    const { data: articles, error } = await this.supabase
+      .from(this.tableName)
+      .select()
+      .textSearch('search_vector', query)
+      .eq('published', true);
+
+    if (error) throw error;
+    return articles.map(article => new ArticleEntity(article));
+  }
+
+  async create(data: CreateArticleDTO): Promise<Article> {
+    const { data: article, error } = await this.supabase
+      .from(this.tableName)
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return new ArticleEntity(article);
   }
 
   async update(id: number, data: UpdateArticleDTO): Promise<Article> {

@@ -6,7 +6,7 @@ export type Article = {
   title: string;
   slug: string;
   content: string;
-  status: ArticleStatus;
+  status: 'draft' | 'published' | 'archived';
   revision: number;
   author_id: number | null;
   created_at: Date;
@@ -15,5 +15,22 @@ export type Article = {
   metadata: Record<string, any> | null;
 };
 
-export type CreateArticleDTO = Omit<Article, 'id' | 'created_at' | 'updated_at' | 'revision'>;
-export type UpdateArticleDTO = Partial<Omit<CreateArticleDTO, 'company_id'>>; 
+export type CreateArticleDTO = {
+  company_id: number;
+  title: string;
+  slug: string;
+  content: string;
+  author_id: number;
+  status?: 'draft' | 'published' | 'archived';
+  metadata?: Record<string, any>;
+};
+
+export type UpdateArticleDTO = {
+  title?: string;
+  slug?: string;
+  content?: string;
+  status?: 'draft' | 'published' | 'archived';
+  revision?: number;
+  metadata?: Record<string, any>;
+  published_at?: string | null;
+}; 
