@@ -10,11 +10,15 @@ export class ApiKeyRepository implements IApiKeyRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async create(data: CreateApiKeyDTO): Promise<ApiKey> {
-    const apiKey = generateApiKey(); // You'll need to implement this utility function
+    const apiKey = generateApiKey();
+    
+    // Set expiration to 7 days from now
+    const expires_at = new Date();
+    expires_at.setDate(expires_at.getDate() + 7);
     
     const { data: createdKey, error } = await this.supabase
       .from(this.tableName)
-      .insert({ ...data, api_key: apiKey })
+      .insert({ ...data, api_key: apiKey, expires_at })
       .select()
       .single();
 

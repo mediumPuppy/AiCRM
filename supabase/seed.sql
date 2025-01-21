@@ -78,3 +78,22 @@ INSERT INTO public.custom_field_values (custom_field_id, record_id, value) VALUE
 (1, 2, 'Retail'),
 (2, 1, 'Production impact'),
 (3, 3, '500');
+
+-- Additional historical data for analytics
+INSERT INTO public.tickets 
+(company_id, contact_id, assigned_to, subject, description, status, priority, created_at, closed_at) 
+VALUES
+(1, 1, 2, 'Login Issue', 'Cannot reset password', 'closed', 'high', NOW() - INTERVAL '7 days', NOW() - INTERVAL '6 days'),
+(1, 1, 2, 'Export Failed', 'CSV export not working', 'closed', 'normal', NOW() - INTERVAL '6 days', NOW() - INTERVAL '5 days'),
+(1, 2, 2, 'API Error', '500 error on endpoint', 'closed', 'urgent', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days'),
+(1, 2, 2, 'Mobile App Crash', 'App crashes on startup', 'open', 'high', NOW() - INTERVAL '2 days', NULL),
+(1, 1, 2, 'Data Import Failed', 'Bulk import error', 'in_progress', 'normal', NOW() - INTERVAL '1 day', NULL);
+
+-- Additional chat session history for metrics
+INSERT INTO public.chat_sessions 
+(company_id, contact_id, agent_id, status, created_at, ended_at) 
+VALUES
+(1, 1, 2, 'closed', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days' + INTERVAL '30 minutes'),
+(1, 2, 2, 'closed', NOW() - INTERVAL '6 days', NOW() - INTERVAL '6 days' + INTERVAL '45 minutes'),
+(1, 1, 2, 'closed', NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days' + INTERVAL '15 minutes'),
+(1, 2, 2, 'active', NOW() - INTERVAL '10 minutes', NULL);

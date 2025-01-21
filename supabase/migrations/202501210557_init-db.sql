@@ -81,11 +81,20 @@ CREATE TABLE IF NOT EXISTS public.companies (
   branding JSONB DEFAULT jsonb_build_object(
     'primary_color', '#000000',
     'secondary_color', '#ffffff',
+    'accent_color', '#007AFF',
     'logo_url', null,
     'favicon_url', null,
     'company_url', null,
     'email_template', null,
-    'portal_theme', 'light'
+    'portal_theme', 'light',
+    'font_family', 'Inter',
+    'border_radius', '8px',
+    'button_style', 'rounded',
+    'navigation_style', 'sidebar',
+    'card_style', 'flat',
+    'loading_animation', 'pulse',
+    'custom_css', null,
+    'layout_density', 'comfortable'
   )
 );
 

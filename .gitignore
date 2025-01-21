@@ -25,9 +25,3 @@ dist-ssr
 
 .env
 cursor*.md
-
-# Docker
-.docker/
-
-# Jest
-jest*
