@@ -11,9 +11,10 @@ export type CompanyBranding = {
   layout_density: 'comfortable' | 'compact' | 'spacious'
 }
 
-export type DashboardStats = {
-  total_tickets: number
-  open_tickets: number
-  active_chats: number
-  contact_count: number
+export interface DashboardStats {
+  totalTickets: number;
+  openTickets: number;
+  totalContacts: number;
+  activeChats: number;
+  publishedArticles: number;
 } 

@@ -8,11 +8,12 @@ export class ArticleRepository implements IArticleRepository {
 
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async findAll({ page, limit, category, published }: {
+  async findAll({ page, limit, category, published, companyId }: {
     page: number;
     limit: number;
     category?: string;
     published?: boolean;
+    companyId?: number;
   }): Promise<{ articles: Article[]; total: number }> {
     let query = this.supabase
       .from(this.tableName)
@@ -23,7 +24,13 @@ export class ArticleRepository implements IArticleRepository {
     }
 
     if (typeof published === 'boolean') {
-      query = query.eq('published', published);
+      query = published 
+        ? query.not('published_at', 'is', null)
+        : query.is('published_at', null);
+    }
+
+    if (companyId) {
+      query = query.eq('company_id', companyId);
     }
 
     const start = (page - 1) * limit;

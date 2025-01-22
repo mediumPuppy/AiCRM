@@ -28,6 +28,7 @@ const getTickets: RequestHandler = async (req, res) => {
     const companyId = Number(req.query.companyId);
     const status = req.query.status as any;
 
+
     if (!companyId) {
       res.status(400).json({ error: 'Company ID is required' });
       return;
@@ -39,6 +40,7 @@ const getTickets: RequestHandler = async (req, res) => {
 
     res.json(tickets);
   } catch (error) {
+    console.error('DB Error:', error); // Debug error details
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 };
@@ -64,6 +66,7 @@ const getTicketById: RequestHandler = async (req, res) => {
     }
     res.json(ticket);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to fetch ticket' });
   }
 };
@@ -82,9 +85,15 @@ const getTicketById: RequestHandler = async (req, res) => {
  */
 const getTicketsByContact: RequestHandler = async (req, res) => {
   try {
-    const tickets = await ticketRepo.findByContactId(Number(req.params.contactId));
+    const contactId = Number(req.params.contactId);
+    if (!contactId) {
+      res.status(400).json({ error: 'Contact ID is required' });
+      return;
+    }
+    const tickets = await ticketRepo.findByContactId(contactId);
     res.json(tickets);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 };
@@ -103,9 +112,15 @@ const getTicketsByContact: RequestHandler = async (req, res) => {
  */
 const getTicketsByAssignee: RequestHandler = async (req, res) => {
   try {
-    const tickets = await ticketRepo.findByAssignedUser(Number(req.params.userId));
+    const userId = Number(req.params.userId);
+    if (!userId) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
+    const tickets = await ticketRepo.findByAssignedUser(userId);
     res.json(tickets);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 };
@@ -148,9 +163,14 @@ const getTicketsByAssignee: RequestHandler = async (req, res) => {
  */
 const createTicket: RequestHandler = async (req, res) => {
   try {
+    if (!req.body.company_id || !req.body.subject) {
+      res.status(400).json({ error: 'Company ID and subject are required' });
+      return;
+    }
     const ticket = await ticketRepo.create(req.body);
     res.status(201).json(ticket);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to create ticket' });
   }
 };
@@ -169,9 +189,19 @@ const createTicket: RequestHandler = async (req, res) => {
  */
 const updateTicket: RequestHandler = async (req, res) => {
   try {
-    const ticket = await ticketRepo.update(Number(req.params.id), req.body);
+    const ticketId = Number(req.params.id);
+    if (!ticketId) {
+      res.status(400).json({ error: 'Ticket ID is required' });
+      return;
+    }
+    const ticket = await ticketRepo.update(ticketId, req.body);
+    if (!ticket) {
+      res.status(404).json({ error: 'Ticket not found' });
+      return;
+    }
     res.json(ticket);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to update ticket' });
   }
 };
@@ -190,10 +220,20 @@ const updateTicket: RequestHandler = async (req, res) => {
  */
 const updateTicketStatus: RequestHandler = async (req, res) => {
   try {
+    const ticketId = Number(req.params.id);
     const { status } = req.body;
-    const ticket = await ticketRepo.updateStatus(Number(req.params.id), status);
+    if (!ticketId || !status) {
+      res.status(400).json({ error: 'Ticket ID and status are required' });
+      return;
+    }
+    const ticket = await ticketRepo.updateStatus(ticketId, status);
+    if (!ticket) {
+      res.status(404).json({ error: 'Ticket not found' });
+      return;
+    }
     res.json(ticket);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to update ticket status' });
   }
 };
@@ -212,10 +252,20 @@ const updateTicketStatus: RequestHandler = async (req, res) => {
  */
 const assignTicket: RequestHandler = async (req, res) => {
   try {
+    const ticketId = Number(req.params.id);
     const { userId } = req.body;
-    const ticket = await ticketRepo.updateAssignment(Number(req.params.id), userId);
+    if (!ticketId || !userId) {
+      res.status(400).json({ error: 'Ticket ID and user ID are required' });
+      return;
+    }
+    const ticket = await ticketRepo.updateAssignment(ticketId, userId);
+    if (!ticket) {
+      res.status(404).json({ error: 'Ticket not found' });
+      return;
+    }
     res.json(ticket);
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to assign ticket' });
   }
 };
@@ -234,9 +284,15 @@ const assignTicket: RequestHandler = async (req, res) => {
  */
 const deleteTicket: RequestHandler = async (req, res) => {
   try {
-    await ticketRepo.delete(Number(req.params.id));
+    const ticketId = Number(req.params.id);
+    if (!ticketId) {
+      res.status(400).json({ error: 'Ticket ID is required' });
+      return;
+    }
+    await ticketRepo.delete(ticketId);
     res.status(204).send();
   } catch (error) {
+    console.error('DB Error:', error);
     res.status(500).json({ error: 'Failed to delete ticket' });
   }
 };

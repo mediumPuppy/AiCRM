@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { CompanyBranding } from '../../../server/src/lib/dashboard/types'
+import { CompanyBranding } from '../lib/dashboard/types'
 
 export function useCompanyBranding(companyId: number = 1) {
   const { data: branding, isLoading } = useQuery<CompanyBranding>({

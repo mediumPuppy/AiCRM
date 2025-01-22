@@ -1,5 +1,7 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
+import { Button } from "../ui/button"
+import { Card } from "../ui/card"
+import { CardHeader } from "../ui/card"
+import { CardContent } from "../ui/card"
 import { useCompanyBranding } from "@/hooks/useCompanyBranding"
 
 export function QuickActions() {

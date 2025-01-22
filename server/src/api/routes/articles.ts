@@ -28,19 +28,27 @@ const articleRepo = new ArticleRepository(supabase);
  *         name: published
  *         schema:
  *           type: boolean
+ *       - in: query
+ *         name: companyId
+ *         schema:
+ *           type: integer
  */
 const getArticles: RequestHandler = async (req, res) => {
   try {
+    
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const category = req.query.category as string;
     const published = req.query.published === 'true';
+    const companyId = req.query.companyId ? Number(req.query.companyId) : undefined;
+
 
     const { articles, total } = await articleRepo.findAll({
       page,
       limit,
       category,
-      published
+      published,
+      companyId
     });
 
     res.json({
@@ -53,7 +61,11 @@ const getArticles: RequestHandler = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch articles' });
+    console.error('Article fetch error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch articles',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 };
 

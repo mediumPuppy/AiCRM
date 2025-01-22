@@ -1,27 +1,44 @@
-export function Sidebar() {
+import { Link } from 'react-router-dom'
+import { IconDashboard, IconX } from '@tabler/icons-react'
+
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   return (
-    <aside className="w-64 border-r bg-card">
-      <nav className="p-4 space-y-2">
-        <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
-          Menu
-        </div>
-        
-        <a href="/dashboard" className="flex items-center px-3 py-2 text-sm rounded-md bg-accent">
-          Dashboard
-        </a>
+    <div className="w-64 h-full bg-card border-r p-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold">Menu</h2>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-accent rounded-md"
+        >
+          <IconX size={20} />
+        </button>
+      </div>
+      
+      <nav className="space-y-2">
+        <Link 
+          to="/dashboard"
+          className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-accent"
+        >
+          <IconDashboard size={20} />
+          <span>Dashboard</span>
+        </Link>
 
-        <a href="/tickets" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
+        <Link to="/tickets" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
           Tickets
-        </a>
+        </Link>
 
-        <a href="/contacts" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
+        <Link to="/contacts" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
           Contacts
-        </a>
+        </Link>
 
-        <a href="/chats" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
+        <Link to="/chats" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
           Chat Sessions
-        </a>
+        </Link>
       </nav>
-    </aside>
+    </div>
   )
 } 

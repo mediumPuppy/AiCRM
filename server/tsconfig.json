@@ -14,7 +14,7 @@
     },
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*", "../client/src/hooks", "../client/src/hooks"],
+  "include": ["src/**/*", "../client/src/hooks", "../client/src/hooks", "../client/src/lib/dashboard"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,
