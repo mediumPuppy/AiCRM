@@ -489,7 +489,11 @@ CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON public.chat_sessions(comp
 CREATE INDEX IF NOT EXISTS idx_chat_messages_company ON public.chat_messages(company_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON public.chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_timeline ON public.chat_messages(company_id, created_at DESC);
-
+-- Add these indexes
+CREATE INDEX IF NOT EXISTS idx_tickets_priority ON public.tickets(company_id, priority);
+CREATE INDEX IF NOT EXISTS idx_tickets_assigned_to ON public.tickets(company_id, assigned_to);
+CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON public.tickets(company_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tickets_subject_description ON public.tickets USING gin(to_tsvector('english', subject || ' ' || description));
 -- Add chat tables to realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE chat_sessions;

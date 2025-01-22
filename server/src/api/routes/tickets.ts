@@ -25,22 +25,38 @@ const ticketRepo = new TicketRepository(supabase);
  */
 const getTickets: RequestHandler = async (req, res) => {
   try {
-    const companyId = Number(req.query.companyId);
-    const status = req.query.status as any;
-
+    const {
+      companyId,
+      status,
+      priority,
+      search,
+      page = 1,
+      limit = 10
+    } = req.query;
 
     if (!companyId) {
       res.status(400).json({ error: 'Company ID is required' });
       return;
     }
 
-    const tickets = status 
-      ? await ticketRepo.findByStatus(companyId, status)
-      : await ticketRepo.findByCompanyId(companyId);
+    const filterParams = {
+      company_id: Number(companyId),
+      status: status ? (Array.isArray(status) ? status.map(String) : [String(status)]) : undefined,
+      priority: priority ? (Array.isArray(priority) ? priority.map(String) : [String(priority)]) : undefined,
+      search: search as string,
+      page: Number(page),
+      limit: Number(limit)
+    };
 
-    res.json(tickets);
-  } catch (error) {
-    console.error('DB Error:', error); // Debug error details
+
+    const result = await ticketRepo.findFiltered(filterParams);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Detailed error:', {
+      message: error.message,
+      stack: error.stack,
+      details: error
+    });
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 };
@@ -208,70 +224,6 @@ const updateTicket: RequestHandler = async (req, res) => {
 
 /**
  * @swagger
- * /api/tickets/{id}/status:
- *   patch:
- *     summary: Update ticket status
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- */
-const updateTicketStatus: RequestHandler = async (req, res) => {
-  try {
-    const ticketId = Number(req.params.id);
-    const { status } = req.body;
-    if (!ticketId || !status) {
-      res.status(400).json({ error: 'Ticket ID and status are required' });
-      return;
-    }
-    const ticket = await ticketRepo.updateStatus(ticketId, status);
-    if (!ticket) {
-      res.status(404).json({ error: 'Ticket not found' });
-      return;
-    }
-    res.json(ticket);
-  } catch (error) {
-    console.error('DB Error:', error);
-    res.status(500).json({ error: 'Failed to update ticket status' });
-  }
-};
-
-/**
- * @swagger
- * /api/tickets/{id}/assign:
- *   patch:
- *     summary: Assign ticket to user
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- */
-const assignTicket: RequestHandler = async (req, res) => {
-  try {
-    const ticketId = Number(req.params.id);
-    const { userId } = req.body;
-    if (!ticketId || !userId) {
-      res.status(400).json({ error: 'Ticket ID and user ID are required' });
-      return;
-    }
-    const ticket = await ticketRepo.updateAssignment(ticketId, userId);
-    if (!ticket) {
-      res.status(404).json({ error: 'Ticket not found' });
-      return;
-    }
-    res.json(ticket);
-  } catch (error) {
-    console.error('DB Error:', error);
-    res.status(500).json({ error: 'Failed to assign ticket' });
-  }
-};
-
-/**
- * @swagger
  * /api/tickets/{id}:
  *   delete:
  *     summary: Delete a ticket
@@ -297,6 +249,55 @@ const deleteTicket: RequestHandler = async (req, res) => {
   }
 };
 
+const getTicketConversationHistory: RequestHandler = async (req, res) => {
+  try {
+    const ticketId = Number(req.params.id);
+    
+    // Get chat messages
+    const { data: chatMessages } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('session_id', supabase.from('chat_sessions').select('id').eq('ticket_id', ticketId))
+      .order('created_at', { ascending: true });
+
+    // Get notes
+    const { data: notes } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('target_type', 'ticket')
+      .eq('target_id', ticketId)
+      .order('created_at', { ascending: true });
+
+    // Combine and format the results
+    const conversationHistory = [
+      ...(chatMessages || []).map(msg => ({
+        id: msg.id,
+        type: 'chat_message',
+        message: msg.message,
+        sender_type: msg.sender_type,
+        sender_id: msg.sender_id,
+        created_at: msg.created_at,
+        metadata: msg.metadata
+      })),
+      ...(notes || []).map(note => ({
+        id: note.id,
+        type: 'note',
+        message: note.note,
+        sender_type: 'agent',
+        sender_id: note.user_id,
+        created_at: note.created_at
+      }))
+    ].sort((a, b) => 
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    res.json(conversationHistory);
+  } catch (error) {
+    console.error('Failed to fetch conversation history:', error);
+    res.status(500).json({ error: 'Failed to fetch conversation history' });
+  }
+};
+
 // Route definitions
 router.get('/', ticketReadLimiter, getTickets);
 router.get('/:id', ticketReadLimiter, getTicketById);
@@ -304,8 +305,7 @@ router.get('/contact/:contactId', ticketReadLimiter, getTicketsByContact);
 router.get('/assigned/:userId', ticketReadLimiter, getTicketsByAssignee);
 router.post('/', ticketWriteLimiter, createTicket);
 router.patch('/:id', ticketWriteLimiter, updateTicket);
-router.patch('/:id/status', ticketWriteLimiter, updateTicketStatus);
-router.patch('/:id/assign', ticketWriteLimiter, assignTicket);
 router.delete('/:id', ticketWriteLimiter, deleteTicket);
+router.get('/:id/conversation', ticketReadLimiter, getTicketConversationHistory);
 
 export default router; 

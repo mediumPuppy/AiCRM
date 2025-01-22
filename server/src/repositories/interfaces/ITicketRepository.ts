@@ -8,7 +8,5 @@ export interface ITicketRepository {
   findByAssignedUser(userId: number): Promise<Ticket[]>;
   findByStatus(companyId: number, status: Ticket['status']): Promise<Ticket[]>;
   update(id: number, data: UpdateTicketDTO): Promise<Ticket>;
-  updateStatus(id: number, status: Ticket['status']): Promise<Ticket>;
-  updateAssignment(id: number, userId: number | null): Promise<Ticket>;
   delete(id: number): Promise<void>;
 } 

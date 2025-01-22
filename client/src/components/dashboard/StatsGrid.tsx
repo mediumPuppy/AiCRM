@@ -31,30 +31,38 @@ const StatCard = ({ title, value, icon, loading }: StatCardProps) => (
 
 export function StatsGrid({ companyId }: { companyId: string }) {
   const { data, isLoading } = useCompanyStats(companyId);
+  
+  // Provide default values when data is undefined
+  const stats = {
+    totalTickets: data?.totalTickets ?? 0,
+    openTickets: data?.openTickets ?? 0,
+    totalContacts: data?.totalContacts ?? 0,
+    publishedArticles: data?.publishedArticles ?? 0
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         title="Total Tickets"
-        value={data?.totalTickets || 0}
+        value={stats.totalTickets}
         loading={isLoading}
         icon={<IconTicket size={32} stroke={1.5} className="text-primary" />}
       />
       <StatCard
         title="Open Tickets"
-        value={data?.openTickets || 0}
+        value={stats.openTickets}
         loading={isLoading}
         icon={<IconTicket size={32} stroke={1.5} className="text-primary" />}
       />
       <StatCard
         title="Total Contacts"
-        value={data?.totalContacts || 0}
+        value={stats.totalContacts}
         loading={isLoading}
         icon={<IconUsers size={32} stroke={1.5} className="text-primary" />}
       />
       <StatCard
         title="Published Articles"
-        value={data?.publishedArticles || 0}
+        value={stats.publishedArticles}
         loading={isLoading}
         icon={<IconArticle size={32} stroke={1.5} className="text-primary" />}
       />

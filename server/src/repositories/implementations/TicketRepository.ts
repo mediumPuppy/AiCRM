@@ -99,4 +99,66 @@ export class TicketRepository implements ITicketRepository {
 
     if (error) throw error;
   }
+
+  async findFiltered(params: {
+    company_id: number,
+    status?: string[],
+    priority?: string[],
+    assignedTo?: string[],
+    dateRange?: [Date, Date],
+    search?: string,
+    tags?: string[],
+    page: number,
+    limit: number
+  }) {
+    try {
+      let query = this.supabase
+        .from(this.tableName)
+        .select('*', { count: 'exact' })
+        .eq('company_id', params.company_id);
+
+      if (params.status?.length) {
+        query = query.in('status', params.status);
+      }
+
+      if (params.priority?.length) {
+        query = query.in('priority', params.priority);
+      }
+
+      if (params.assignedTo?.length) {
+        query = query.in('assigned_to', params.assignedTo);
+      }
+
+      if (params.dateRange) {
+        query = query
+          .gte('created_at', params.dateRange[0].toISOString())
+          .lte('created_at', params.dateRange[1].toISOString());
+      }
+
+      if (params.tags?.length) {
+        query = query.contains('tags', params.tags);
+      }
+
+      if (params.search) {
+        query = query.or(`subject.ilike.%${params.search}%,description.ilike.%${params.search}%`);
+      }
+
+      const { data: tickets, error, count } = await query
+        .range((params.page - 1) * params.limit, params.page * params.limit - 1)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      return {
+        tickets: tickets.map(ticket => new TicketEntity(ticket)),
+        total: count || 0
+      };
+    } catch (error: any) {
+      console.error('findFiltered error:', error);
+      throw error;
+    }
+  }
 } 

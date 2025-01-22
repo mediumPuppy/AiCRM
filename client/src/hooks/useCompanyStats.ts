@@ -9,21 +9,24 @@ export const useCompanyStats = (companyId: string | number) => {
   return useQuery<DashboardStats>({
     queryKey: ['companyStats', companyId],
     queryFn: async () => {
-      
-      const [tickets, contacts, articles, chats] = await Promise.all([
-        ticketsApi.getByCompany(companyId),
-        contactsApi.getByCompany(companyId),
-        articlesApi.getByCompany({ companyId: Number(companyId), page: 1, limit: 10 }),
-        chatsApi.getCompanySessions(companyId)
-      ]);
+      const tickets = await ticketsApi.getByCompany(companyId);
+      const contacts = await contactsApi.getByCompany(companyId);
+      const articles = await articlesApi.getByCompany({ 
+        companyId: Number(companyId), 
+        page: 1, 
+        limit: 10 
+      });
+      const chats = await chatsApi.getCompanySessions(companyId);
 
       return {
-        totalTickets: tickets.length,
-        openTickets: tickets.filter(t => t.status === 'open').length,
+        totalTickets: tickets.total,
+        openTickets: tickets.tickets.filter(t => t.status === 'open').length,
         totalContacts: contacts.length,
         activeChats: chats.filter(c => c.status === 'active').length,
-        publishedArticles: articles.metadata.total
+        publishedArticles: articles.data.length
       };
-    }
+    },
+    retry: false, // Disable retries to see errors immediately
+    refetchOnWindowFocus: false, // Disable automatic refetching
   });
 }; 

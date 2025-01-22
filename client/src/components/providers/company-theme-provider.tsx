@@ -1,5 +1,3 @@
-"use client"
-
 import { createContext, useContext, useEffect } from "react"
 import { useCompanyBranding } from "../../hooks/useCompanyBranding"
 import { CompanyBranding } from "../../lib/dashboard/types"

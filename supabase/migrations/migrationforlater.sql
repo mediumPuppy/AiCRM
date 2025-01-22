@@ -49,3 +49,9 @@ USING (company_id = auth.jwt() ->> 'company_id');
 CREATE POLICY "Companies can add notes to their tickets"
 ON public.notes FOR ALL
 USING (company_id = auth.jwt() ->> 'company_id');
+
+-- Add these indexes
+CREATE INDEX IF NOT EXISTS idx_tickets_priority ON public.tickets(company_id, priority);
+CREATE INDEX IF NOT EXISTS idx_tickets_assigned_to ON public.tickets(company_id, assigned_to);
+CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON public.tickets(company_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tickets_subject_description ON public.tickets USING gin(to_tsvector('english', subject || ' ' || description));
