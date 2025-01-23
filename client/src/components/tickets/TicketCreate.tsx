@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTicketCreate } from '@/hooks/useTicketCreate'
 import { useCreateContact } from '@/hooks/useCreateContact'
 import { useQueryClient } from '@tanstack/react-query'
+import { Button } from '../ui/button'
 
 interface TicketCreateProps {
   onClose: () => void
@@ -185,13 +186,13 @@ export function TicketCreate({ onClose, onTicketCreated }: TicketCreateProps) {
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         placeholder="Search contacts..."
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="outline"
                         onClick={() => setIsCreatingContact(true)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        size="sm"
                       >
                         New
-                      </button>
+                      </Button>
                     </div>
                     {showDropdown && searchTerm && !selectedContact && (
                       <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg">
@@ -259,21 +260,18 @@ export function TicketCreate({ onClose, onTicketCreated }: TicketCreateProps) {
                       />
                     </div>
                     <div className="flex gap-2">
-                      <button
-                        type="button"
+                      <Button
                         onClick={handleCreateContact}
                         disabled={createContactMutation.isPending}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         {createContactMutation.isPending ? 'Creating...' : 'Create Contact'}
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
+                        variant="outline"
                         onClick={() => setIsCreatingContact(false)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -323,17 +321,16 @@ export function TicketCreate({ onClose, onTicketCreated }: TicketCreateProps) {
             </div>
 
             {/* Create Button */}
-            <button
-              type="submit"
+            <Button
+              className="w-full"
               disabled={isCreating}
               onClick={(e) => {
                 e.preventDefault()
                 handleSubmit(e)
               }}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {isCreating ? 'Creating...' : 'Create Ticket'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

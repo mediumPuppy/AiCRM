@@ -1,9 +1,9 @@
 import { Suspense, useState } from 'react'
 import { useCustomerChatSessions } from '@/hooks/useCustomerChatSessions'
 import { CustomerChatSessionsTable } from '../CustomerChatSessionsTable'
-import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import CustomerChatSessionDetail from './CustomerChatSessionDetail'
+import { TablePageHeader } from '@/components/ui/table-page-header'
 
 // Hardcoded mock user for development
 const mockUser = {
@@ -53,18 +53,13 @@ export default function CustomerChatSessions() {
       <div className={`flex-1 min-w-0 ${
         selectedSessionId ? 'hidden xl:block' : 'block'
       }`}>
-        <header className="border-b h-16 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">My Chat Sessions</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={handleStartNewSession}>
-              Start New Chat
-            </Button>
-          </div>
-        </header>
-
         <div className="p-6">
+          <TablePageHeader
+            title="My Chat Sessions"
+            buttonLabel="New Chat"
+            onAction={handleStartNewSession}
+          />
+
           <div className="bg-white rounded-lg shadow">
             <Suspense fallback={<div>Loading chat sessions...</div>}>
               <CustomerChatSessionsTable 

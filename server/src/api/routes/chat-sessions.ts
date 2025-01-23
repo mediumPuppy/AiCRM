@@ -226,6 +226,24 @@ const startCustomerSession: RequestHandler = async (req, res) => {
   }
 }
 
+const sendAgentMessage: RequestHandler = async (req, res) => {
+  try {
+    const message = await chatRepo.createMessage({
+      session_id: Number(req.params.id),
+      sender_type: 'agent',
+      sender_id: req.body.agent_id,
+      message: req.body.message,
+      message_type: 'text',
+      company_id: req.body.company_id,
+      metadata: {}
+    })
+    res.status(201).json(message)
+  } catch (error) {
+    console.error('Failed to send agent message:', error)
+    res.status(500).json({ error: 'Failed to send message' })
+  }
+}
+
 // Get customer's chat sessions
 router.get('/customer/:contactId/sessions', getCustomerSessions)
 
@@ -248,5 +266,6 @@ router.get('/agent/:agentId', getAgentSessions)
 router.patch('/:id', updateSession)
 router.post('/:id/close', closeSession)
 router.get('/:id/messages', getSessionMessages)
+router.post('/:id/messages', sendAgentMessage)
 
 export default router 

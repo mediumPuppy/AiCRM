@@ -163,5 +163,28 @@ export const chatsApi = {
       console.error('Failed to send customer message:', error)
       throw error
     }
+  },
+
+  // Send message as agent
+  sendAgentMessage: async (
+    sessionId: number,
+    message: string,
+    agentId: number = 1,  // TODO: Get from auth context
+    companyId: number = 1  // TODO: Get from auth context
+  ): Promise<ChatMessage> => {
+    try {
+      const { data } = await axios.post(
+        `/api/chat/sessions/${sessionId}/messages`,
+        {
+          message,
+          agent_id: agentId,
+          company_id: companyId
+        }
+      )
+      return data
+    } catch (error) {
+      console.error('Failed to send agent message:', error)
+      throw error
+    }
   }
 }; 

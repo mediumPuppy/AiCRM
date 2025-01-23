@@ -4,8 +4,10 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Avatar } from '../ui/avatar'
 import { AvatarFallback } from '../ui/avatar'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconMessage, IconSettings } from '@tabler/icons-react'
 import type { ChatSession } from '@/types/chat.types'
+import { AgentChatInput } from './AgentChatInput'
+import { useState } from 'react'
 
 interface ChatSessionDetailProps {
   sessionId: number
@@ -18,12 +20,14 @@ export function ChatSessionDetail({
   onClose,
   onSessionUpdate 
 }: ChatSessionDetailProps) {
+  const [showDetails, setShowDetails] = useState(false)
   const {
     session,
     isLoading,
     updateStatus,
     messages,
-    isLoadingMessages
+    isLoadingMessages,
+    sendMessage
   } = useChatSessionDetail(sessionId)
 
   if (isLoading) {
@@ -55,63 +59,89 @@ export function ChatSessionDetail({
             {session.status}
           </Badge>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
-          <IconX className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setShowDetails(!showDetails)}
+            className="lg:hidden"
+            aria-label={showDetails ? "Show chat" : "Show details"}
+          >
+            {showDetails ? (
+              <IconMessage className="h-4 w-4" />
+            ) : (
+              <IconSettings className="h-4 w-4" />
+            )}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
+            <IconX className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 min-h-0 flex">
-        {/* Conversation area */}
-        <div className="flex-1 min-w-0 overflow-auto p-4">
-          {isLoadingMessages ? (
-            <div className="text-center py-8 text-gray-500">Loading messages...</div>
-          ) : messages?.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No messages in this session</div>
-          ) : (
-            <div className="space-y-6 min-h-0">
-              {messages?.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-4 ${
-                    message.sender_type === 'agent' ? 'flex-row-reverse' : 'flex-row'
-                  }`}
-                >
-                  <Avatar className="flex-shrink-0 w-10 h-10">
-                    <AvatarFallback>
-                      {message.sender_type === 'agent' ? 'A' : 'C'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
+        {/* Messages and Input Area */}
+        <div className={`flex-1 min-w-0 flex flex-col ${showDetails ? 'hidden lg:flex' : 'flex'}`}>
+          {/* Conversation area */}
+          <div className="flex-1 overflow-auto p-4">
+            {isLoadingMessages ? (
+              <div className="text-center py-8 text-gray-500">Loading messages...</div>
+            ) : messages?.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No messages in this session</div>
+            ) : (
+              <div className="space-y-6">
+                {messages?.map((message) => (
                   <div
-                    className={`flex-1 rounded-lg p-4 border ${
-                      message.sender_type === 'agent'
-                        ? 'bg-white'
-                        : 'bg-gray-50'
-                    } ${
-                      message.sender_type === 'agent'
-                        ? 'ml-16'
-                        : 'mr-16'
+                    key={message.id}
+                    className={`flex gap-4 ${
+                      message.sender_type === 'agent' ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">
-                        {message.sender_type === 'agent' ? 'Agent' : 'Customer'}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {format(new Date(message.created_at), 'HH:mm')}
-                      </span>
+                    <Avatar className="flex-shrink-0 w-10 h-10">
+                      <AvatarFallback>
+                        {message.sender_type === 'agent' ? 'A' : 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div
+                      className={`flex-1 rounded-lg p-4 border ${
+                        message.sender_type === 'agent'
+                          ? 'bg-white'
+                          : 'bg-gray-50'
+                      } ${
+                        message.sender_type === 'agent'
+                          ? 'ml-16'
+                          : 'mr-16'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">
+                          {message.sender_type === 'agent' ? 'Agent' : 'Customer'}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {format(new Date(message.created_at), 'HH:mm')}
+                        </span>
+                      </div>
+                      <p className="whitespace-pre-wrap">{message.message}</p>
                     </div>
-                    <p className="whitespace-pre-wrap">{message.message}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Message Input */}
+          <div className="p-4 border-t">
+            <AgentChatInput
+              onSendMessage={sendMessage}
+              disabled={session.status !== 'active'}
+            />
+          </div>
         </div>
 
         {/* Right sidebar - Details */}
-        <div className="hidden lg:block w-80 border-l overflow-y-auto">
+        <div className={`w-full lg:w-80 border-l overflow-y-auto ${showDetails ? 'block' : 'hidden lg:block'}`}>
           <div className="p-4 space-y-6">
             {/* Timing Information */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-4">

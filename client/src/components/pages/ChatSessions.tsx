@@ -26,7 +26,7 @@ export default function ChatSessions() {
       }`}>
         <TablePageHeader
           title="Chat Sessions"
-          buttonLabel=""
+          buttonLabel="New Chat"
           onAction={() => {}}
         />
         

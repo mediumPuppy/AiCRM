@@ -53,6 +53,20 @@ export function useChatSessionDetail(sessionId: number) {
     }
   })
 
+  // Send message mutation
+  const sendMessage = useMutation({
+    mutationFn: (message: string) => 
+      chatsApi.sendAgentMessage(
+        sessionId,
+        message,
+        session?.agent_id || 1, // TODO: Get from auth context
+        session?.company_id || 1 // TODO: Get from auth context
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-session-messages', sessionId] })
+    }
+  })
+
   return {
     session,
     isLoading,
@@ -62,6 +76,7 @@ export function useChatSessionDetail(sessionId: number) {
     messagesError,
     updateStatus: updateStatus.mutate,
     archiveSession: archiveSession.mutate,
+    sendMessage: sendMessage.mutate,
     isUpdating: updateStatus.isPending || archiveSession.isPending
   }
 } 
