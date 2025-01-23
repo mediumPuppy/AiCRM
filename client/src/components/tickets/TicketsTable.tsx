@@ -28,6 +28,7 @@ export function TicketsTable({
   pagination,
   onPaginationChange,
   onTicketSelect,
+  selectedTicketId,
 }: TicketsTableProps) {
   const getStatusColor = (status: Ticket['status']) => {
     const colors = {
@@ -81,7 +82,14 @@ export function TicketsTable({
               </TableRow>
             ) : (
               tickets.tickets.map((ticket) => (
-                <TableRow key={ticket.id}>
+                <TableRow 
+                  key={ticket.id}
+                  className={`transition-colors ${
+                    selectedTicketId === ticket.id 
+                      ? 'bg-gray-50 border-l-2 border-l-primary' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
                   <TableCell>#{ticket.id}</TableCell>
                   <TableCell className="font-medium">{ticket.subject}</TableCell>
                   <TableCell>
@@ -122,7 +130,11 @@ export function TicketsTable({
           tickets.tickets.map((ticket) => (
             <div 
               key={ticket.id} 
-              className="p-4 space-y-3 hover:bg-gray-50 cursor-pointer"
+              className={`p-4 space-y-3 cursor-pointer transition-colors ${
+                selectedTicketId === ticket.id
+                  ? 'bg-gray-50 ring-1 ring-primary ring-inset'
+                  : 'hover:bg-gray-50'
+              }`}
               onClick={() => onTicketSelect(ticket.id)}
             >
               <div className="flex items-center justify-between">

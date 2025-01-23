@@ -61,7 +61,14 @@ export function ContactsTable({
               </TableRow>
             ) : (
               contacts.map((contact) => (
-                <TableRow key={contact.id}>
+                <TableRow 
+                  key={contact.id}
+                  className={`transition-colors ${
+                    selectedContactId === contact.id 
+                      ? 'bg-gray-50 border-l-2 border-l-primary' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
                   <TableCell className="font-medium">{contact.full_name}</TableCell>
                   <TableCell>{contact.email}</TableCell>
                   <TableCell>
@@ -100,7 +107,11 @@ export function ContactsTable({
           contacts.map((contact) => (
             <div 
               key={contact.id} 
-              className="p-4 space-y-3 hover:bg-gray-50 cursor-pointer"
+              className={`p-4 space-y-3 cursor-pointer transition-colors ${
+                selectedContactId === contact.id
+                  ? 'bg-gray-50 ring-1 ring-primary ring-inset'
+                  : 'hover:bg-gray-50'
+              }`}
               onClick={() => onContactSelect(contact.id)}
             >
               <div className="flex items-center justify-between">

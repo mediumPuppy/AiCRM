@@ -83,7 +83,10 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
           <Select
             value={filters.status?.[0] ?? ''}
             onValueChange={(value) =>
-              onFiltersChange({ ...filters, status: [value] })
+              onFiltersChange({
+                ...filters,
+                status: value === filters.status?.[0] ? undefined : [value]
+              })
             }
           >
             <SelectTrigger>
@@ -98,7 +101,14 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
             </SelectContent>
           </Select>
 
-          <Select value={filters.priority?.[0] ?? ''} onValueChange={(value) => onFiltersChange({ ...filters, priority: [value] })}>
+          <Select 
+            value={filters.priority?.[0] ?? ''} 
+            onValueChange={(value) => 
+              onFiltersChange({
+                ...filters,
+                priority: value === filters.priority?.[0] ? undefined : [value]
+              })
+            }>
             <SelectTrigger>
               <SelectValue placeholder="Priority" />
             </SelectTrigger>

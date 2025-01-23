@@ -8,10 +8,10 @@ import { ContactNotes } from './ContactNotes';
 import { IconX } from '@tabler/icons-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { useContactTickets } from '@/hooks/useContactTickets';
-import { formatDistanceToNow } from 'date-fns';
 import { Ticket } from '@/api/tickets';
 import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
+import { TicketDetail } from '../tickets/TicketDetail';
 import {
   Select,
   SelectContent,
@@ -50,26 +50,26 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
     }
   };
 
-  const getStatusColor = (status: Ticket['status']) => {
-    const colors = {
-      open: 'default',
-      in_progress: 'secondary',
-      waiting: 'warning',
-      resolved: 'success',
-      closed: 'outline'
-    };
-    return colors[status];
-  };
+  // const getStatusColor = (status: Ticket['status']) => {
+  //   const colors = {
+  //     open: 'default',
+  //     in_progress: 'secondary',
+  //     waiting: 'warning',
+  //     resolved: 'success',
+  //     closed: 'outline'
+  //   };
+  //   return colors[status];
+  // };
 
-  const getPriorityColor = (priority: Ticket['priority']) => {
-    const colors = {
-      urgent: 'destructive',
-      high: 'warning',
-      normal: 'default',
-      low: 'outline'
-    };
-    return colors[priority];
-  };
+  // const getPriorityColor = (priority: Ticket['priority']) => {
+  //   const colors = {
+  //     urgent: 'destructive',
+  //     high: 'warning',
+  //     normal: 'default',
+  //     low: 'outline'
+  //   };
+  //   return colors[priority];
+  // };
 
   if (isLoading) {
     return (
@@ -135,14 +135,30 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
                 {isLoadingTickets ? (
                   <div className="text-center py-4">Loading tickets...</div>
                 ) : (
-                  <TicketsTable
-                    tickets={tickets}
-                    isLoading={isLoadingTickets}
-                    pagination={{ page: 1, limit: 10 }}
-                    onPaginationChange={() => {}}
-                    onTicketSelect={setSelectedTicketId}
-                    selectedTicketId={selectedTicketId}
-                  />
+                  <>
+                    <TicketsTable
+                      tickets={tickets}
+                      isLoading={isLoadingTickets}
+                      pagination={{ page: 1, limit: 10 }}
+                      onPaginationChange={() => {}}
+                      onTicketSelect={setSelectedTicketId}
+                      selectedTicketId={selectedTicketId}
+                    />
+                    
+                    {/* Ticket Detail Modal */}
+                    {selectedTicketId && (
+                      <div className="fixed inset-0 z-50 bg-white overflow-auto">
+                        <TicketDetail 
+                          ticketId={selectedTicketId} 
+                          onClose={() => setSelectedTicketId(null)}
+                          onTicketUpdate={() => {
+                            // Refresh tickets when a ticket is updated
+                            // This will be handled by the useContactTickets hook's refetch
+                          }}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </TabsContent>
@@ -158,12 +174,12 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
         </div>
 
         {/* Right column - Metadata */}
-        <div className="hidden lg:block w-80 p-4 space-y-4">
+        <div className="hidden lg:block w-72 p-4 space-y-4">
           <div className="bg-gray-50 rounded-lg p-4 space-y-4">
             <div>
               <label className="text-sm text-gray-500">Status</label>
               <Select value={contact.status} onValueChange={(value) => handleStatusChange(value as ContactStatus)}>
-                <SelectTrigger className="mt-1">
+                <SelectTrigger className="mt-1 w-36">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,7 +191,7 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
 
             {contact.portal_enabled && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm text-gray-500">
                   Portal Information
                 </label>
                 <div className="mt-2 text-sm text-gray-600">
