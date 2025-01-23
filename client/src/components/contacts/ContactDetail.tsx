@@ -8,7 +8,6 @@ import { ContactNotes } from './ContactNotes';
 import { IconX } from '@tabler/icons-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { useContactTickets } from '@/hooks/useContactTickets';
-import { Ticket } from '@/api/tickets';
 import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
 import { TicketDetail } from '../tickets/TicketDetail';
@@ -36,7 +35,7 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
     error
   } = useContactDetail(contactId);
   const { notes, isLoading: isLoadingNotes, addNote } = useNotes('contact', contactId);
-  const { updateContact, isUpdating } = useUpdateContact();
+  const { updateContact } = useUpdateContact();
   const { tickets, isLoading: isLoadingTickets } = useContactTickets(contactId);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { formatDate } from '@/utils/formatDate';
 import { Note } from '@/api/notes';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Progress } from '../ui/progress';
+import { formatDate } from '../../utils/formatDate';
 
 interface ContactNotesProps {
   notes: Note[];
@@ -28,12 +28,7 @@ export function ContactNotes({ notes, onAddNote, isLoading }: ContactNotesProps)
   };
 
   const formatMessageDate = (date: string) => {
-    return new Date(date).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-    });
+    return formatDate(date, { includeTime: true, includeYear: false });
   };
 
   // Sort notes by created_at in descending order (newest first)

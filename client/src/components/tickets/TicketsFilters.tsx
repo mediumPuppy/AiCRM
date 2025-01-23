@@ -37,10 +37,6 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
     to: filters.dateRange[1] || undefined
   } : undefined
 
-  const clearFilters = () => {
-    onFiltersChange({})
-  }
-
   return (
     <div className="bg-white rounded-lg shadow p-4">
       {/* Basic Filters - Always Visible */}
