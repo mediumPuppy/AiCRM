@@ -24,21 +24,21 @@ export function CustomerChatMessages({ messages }: CustomerChatMessagesProps) {
           </Avatar>
           
           <div
-            className={`flex-1 rounded-lg p-4 ${
+            className={`flex-1 rounded-lg p-4 border ${
               message.sender_type === 'contact'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted'
+                ? 'bg-white'
+                : 'bg-gray-50'
             } ${
               message.sender_type === 'contact'
-                ? 'ml-12'
-                : 'mr-12'
+                ? 'ml-16'
+                : 'mr-16'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">
                 {message.sender_type === 'agent' ? 'Support Agent' : 'You'}
               </span>
-              <span className="text-sm opacity-75">
+              <span className="text-sm text-gray-500">
                 {format(new Date(message.created_at), 'HH:mm')}
               </span>
             </div>

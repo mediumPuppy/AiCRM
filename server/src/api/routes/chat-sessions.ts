@@ -179,6 +179,20 @@ const getCustomerSessions: RequestHandler = async (req, res) => {
   }
 }
 
+const getCustomerSession: RequestHandler = async (req, res) => {
+  try {
+    const session = await chatRepo.findSessionById(Number(req.params.sessionId))
+    if (!session) {
+      res.status(404).json({ error: 'Chat session not found' })
+    } else {
+      res.json(session)
+    }
+  } catch (error) {
+    console.error('Failed to fetch customer chat session:', error)
+    res.status(500).json({ error: 'Failed to fetch customer chat session' })
+  }
+}
+
 const sendCustomerMessage: RequestHandler = async (req, res) => {
   try {
     const message = await chatRepo.createMessage({
@@ -216,7 +230,7 @@ const startCustomerSession: RequestHandler = async (req, res) => {
 router.get('/customer/:contactId/sessions', getCustomerSessions)
 
 // Get specific customer chat session
-router.get('/customer/sessions/:sessionId', getCustomerSessions)
+router.get('/customer/sessions/:sessionId', getCustomerSession)
 
 // Start new customer chat session
 router.post('/customer/:contactId/sessions', startCustomerSession)

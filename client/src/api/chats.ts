@@ -145,12 +145,18 @@ export const chatsApi = {
 
   sendCustomerMessage: async (
     sessionId: number, 
-    message: string
+    message: string,
+    contactId: number = 1,  // TODO: Get from auth context
+    companyId: number = 1   // TODO: Get from auth context
   ): Promise<ChatMessage> => {
     try {
       const { data } = await axios.post(
         `/api/chat/sessions/customer/sessions/${sessionId}/messages`,
-        { message }
+        { 
+          message,
+          contact_id: contactId,
+          company_id: companyId
+        }
       )
       return data
     } catch (error) {

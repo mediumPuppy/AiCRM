@@ -1,25 +1,26 @@
-import { useNavigate, useParams } from 'react-router-dom'
 import { useCustomerChatSession } from '@/hooks/useCustomerChatSession'
 import { CustomerChatMessages } from '../CustomerChatMessages'
 import { CustomerChatInput } from '../CustomerChatInput'
 import { Button } from '@/components/ui/button'
 import { IconX } from '@tabler/icons-react'
 
-export default function CustomerChatSessionDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const sessionId = parseInt(id || '', 10)
+interface CustomerChatSessionDetailProps {
+  sessionId: number
+  onClose: () => void
+  onSessionUpdate?: () => void
+}
 
+export default function CustomerChatSessionDetail({ 
+  sessionId,
+  onClose,
+  onSessionUpdate
+}: CustomerChatSessionDetailProps) {
   const {
     session,
     messages,
     isLoading,
     sendMessage
   } = useCustomerChatSession(sessionId)
-
-  const handleClose = () => {
-    navigate('/customer/chat/sessions')
-  }
 
   if (!session?.started_at) return null
 
@@ -37,7 +38,7 @@ export default function CustomerChatSessionDetail() {
             Started {new Date(session.started_at).toLocaleString()}
           </p>
         </div>
-        <Button variant="ghost" onClick={handleClose} className="xl:hidden">
+        <Button variant="ghost" onClick={onClose} className="xl:hidden">
           <IconX className="h-4 w-4" />
         </Button>
       </div>
@@ -50,7 +51,10 @@ export default function CustomerChatSessionDetail() {
       {/* Input Area */}
       <div className="border-t p-4">
         <CustomerChatInput 
-          onSendMessage={sendMessage}
+          onSendMessage={async (message) => {
+            await sendMessage(message)
+            onSessionUpdate?.()
+          }}
           disabled={session?.status !== 'active'}
         />
       </div>

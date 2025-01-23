@@ -19,14 +19,6 @@ export const useCompanyStats = (companyId: string | number) => {
         });
         const chats = await chatsApi.getCompanySessions(companyId);
 
-        // Add console logs to debug the returned data
-        console.log('Dashboard Stats:', {
-          tickets,
-          contacts,
-          articles,
-          chats
-        });
-
         return {
           totalTickets: tickets?.total ?? 0,
           openTickets: tickets?.tickets?.filter(t => t.status === 'open')?.length ?? 0,
@@ -35,7 +27,6 @@ export const useCompanyStats = (companyId: string | number) => {
           publishedArticles: articles?.data?.length ?? 0
         };
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
         throw error;
       }
     },

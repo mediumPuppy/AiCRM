@@ -4,6 +4,12 @@ import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
+// Hardcoded mock user for development - TODO: Get from auth context
+const mockUser = {
+  contact_id: 1,
+  company_id: 1
+}
+
 export function useCustomerChatSession(sessionId: number) {
   const queryClient = useQueryClient()
 
@@ -22,7 +28,12 @@ export function useCustomerChatSession(sessionId: number) {
   // Send message mutation
   const sendMessage = useMutation({
     mutationFn: (message: string) => 
-      chatsApi.sendCustomerMessage(sessionId, message),
+      chatsApi.sendCustomerMessage(
+        sessionId, 
+        message,
+        mockUser.contact_id,
+        mockUser.company_id
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['customer-chat-messages', sessionId]

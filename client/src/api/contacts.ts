@@ -47,22 +47,14 @@ export const contactsApi = {
             const { data } = await axios.get<Contact[]>(`/api/contacts/company/${companyId}`);
             return data;
         } catch (error: any) {
-            console.error('Failed to fetch contacts:', error);
             throw error;
         }
         },
   getContact: async (id: number) => {
     try {
-      console.log('Fetching contact:', id);
       const { data } = await axios.get<Contact>(`/api/contacts/${id}`);
-      console.log('Contact data received:', data);
       return data;
     } catch (error: any) {
-      console.error('Failed to fetch contact:', {
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data
-      });
       throw error;
     }
   },
@@ -72,7 +64,6 @@ export const contactsApi = {
       const { data } = await axios.patch<Contact>(`/api/contacts/${id}`, updateData);
       return data;
     } catch (error: any) {
-      console.error('Failed to update contact:', error);
       throw error;
     }
   },
@@ -82,7 +73,6 @@ export const contactsApi = {
       const { data } = await axios.get<Note[]>(`/api/contacts/${contactId}/notes`);
       return data;
     } catch (error: any) {
-      console.error('Failed to fetch contact notes:', error);
       throw error;
     }
   },
@@ -92,7 +82,6 @@ export const contactsApi = {
       const { data } = await axios.post<Note>(`/api/contacts/${contactId}/notes`, { content });
       return data;
     } catch (error: any) {
-      console.error('Failed to add contact note:', error);
       throw error;
     }
   },
@@ -102,7 +91,6 @@ export const contactsApi = {
       const { data } = await axios.get<HistoryEntry[]>(`/api/contacts/${contactId}/history`);
       return data;
     } catch (error: any) {
-      console.error('Failed to fetch contact history:', error);
       throw error;
     }
   },
@@ -112,7 +100,6 @@ export const contactsApi = {
       const { data: contact } = await axios.post<Contact>('/api/contacts', data);
       return contact;
     } catch (error: any) {
-      console.error('Failed to create contact:', error);
       throw error;
     }
   },

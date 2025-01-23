@@ -1,8 +1,9 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useCustomerChatSessions } from '@/hooks/useCustomerChatSessions'
 import { CustomerChatSessionsTable } from '../CustomerChatSessionsTable'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import CustomerChatSessionDetail from './CustomerChatSessionDetail'
 
 // Hardcoded mock user for development
 const mockUser = {
@@ -12,6 +13,7 @@ const mockUser = {
 
 export default function CustomerChatSessions() {
   const { toast } = useToast()
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null)
 
   // // Ensure we have the required IDs
   // if (!user?.contact_id || !user?.company_id) {
@@ -29,7 +31,8 @@ export default function CustomerChatSessions() {
     isLoading,
     pagination,
     setPagination,
-    startNewSession
+    startNewSession,
+    refreshSessions
   } = useCustomerChatSessions(mockUser.contact_id, mockUser.company_id)
 
   const handleStartNewSession = async () => {
@@ -45,30 +48,69 @@ export default function CustomerChatSessions() {
   }
 
   return (
-    <>
-      <header className="border-b h-16 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">My Chat Sessions</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button onClick={handleStartNewSession}>
-            Start New Chat
-          </Button>
-        </div>
-      </header>
+    <div className="flex h-full">
+      {/* Main Content - Chat Sessions List */}
+      <div className={`flex-1 min-w-0 ${
+        selectedSessionId ? 'hidden xl:block' : 'block'
+      }`}>
+        <header className="border-b h-16 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold">My Chat Sessions</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button onClick={handleStartNewSession}>
+              Start New Chat
+            </Button>
+          </div>
+        </header>
 
-      <div className="p-6">
-        <div className="bg-white rounded-lg shadow">
-          <Suspense fallback={<div>Loading chat sessions...</div>}>
-            <CustomerChatSessionsTable 
-              sessions={sessions}
-              isLoading={isLoading}
-              pagination={pagination}
-              onPaginationChange={setPagination}
-            />
-          </Suspense>
+        <div className="p-6">
+          <div className="bg-white rounded-lg shadow">
+            <Suspense fallback={<div>Loading chat sessions...</div>}>
+              <CustomerChatSessionsTable 
+                sessions={sessions}
+                isLoading={isLoading}
+                pagination={pagination}
+                onPaginationChange={setPagination}
+                onSessionSelect={setSelectedSessionId}
+                selectedSessionId={selectedSessionId}
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Right Side Panel - Session Details */}
+      <div className={`
+        hidden xl:block w-[750px] border-l border-gray-200
+        ${selectedSessionId ? '' : 'bg-gray-50'}
+      `}>
+        {selectedSessionId ? (
+          <CustomerChatSessionDetail 
+            sessionId={selectedSessionId}
+            onClose={() => setSelectedSessionId(null)}
+            onSessionUpdate={refreshSessions}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-500">
+            <div className="text-center">
+              <h3 className="text-lg font-medium mb-2">No Chat Session Selected</h3>
+              <p>Select a chat session to view its details here</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Session Detail Modal */}
+      {selectedSessionId && (
+        <div className="fixed inset-0 z-50 xl:hidden bg-white overflow-auto">
+          <CustomerChatSessionDetail 
+            sessionId={selectedSessionId}
+            onClose={() => setSelectedSessionId(null)}
+            onSessionUpdate={refreshSessions}
+          />
+        </div>
+      )}
+    </div>
   )
 } 
