@@ -4,7 +4,11 @@ import Dashboard from './components/pages/Dashboard'
 import { DashboardLayout } from './components/layouts/DashboardLayout'
 import Tickets from './components/pages/Tickets'
 import Contacts from './components/pages/Contacts'
+import ChatSessions from './components/pages/ChatSessions'
 import { ModalProvider } from './components/providers/modal-provider'
+import { CustomerLayout } from './components/layouts/CustomerLayout'
+import CustomerChatSessions from './components/customer/pages/CustomerChatSessions'
+import CustomerChatSessionDetail from './components/customer/pages/CustomerChatSessionDetail'
 
 function App() {
   return (
@@ -17,9 +21,16 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tickets" element={<Tickets />} />
               <Route path="/contacts" element={<Contacts />} />
+              <Route path="/chats" element={<ChatSessions />} />
               {/* Add other dashboard routes as you create them:
               <Route path="/chats" element={<Chats />} /> 
               */}
+            </Route>
+
+            {/* Customer portal routes */}
+            <Route element={<CustomerLayout />}>
+              <Route path="/customer/chat/sessions" element={<CustomerChatSessions />} />
+              <Route path="/customer/chat/sessions/:id" element={<CustomerChatSessionDetail />} />
             </Route>
 
             {/* Non-dashboard routes (if any) would go here */}

@@ -20,11 +20,14 @@ export class ChatRepository implements IChatRepository {
 
   // Session methods implementation
   async createSession(data: CreateChatSessionDTO): Promise<ChatSession> {
+    const now = new Date().toISOString();
     const { data: session, error } = await this.supabase
       .from(this.sessionsTable)
       .insert({
         ...data,
-        started_at: new Date().toISOString()
+        started_at: now,
+        created_at: now,
+        updated_at: now
       })
       .select()
       .single();
@@ -194,5 +197,33 @@ export class ChatRepository implements IChatRepository {
 
   unsubscribeFromSession(channel: RealtimeChannel): void {
     this.supabase.removeChannel(channel);
+  }
+
+  async findSessionsByContactId(contactId: number) {
+    const { data, error } = await this.supabase
+      .from('chat_sessions')
+      .select('*, contact:contacts(*), agent:users(*)')
+      .eq('contact_id', contactId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data
+  }
+
+  async createCustomerSession(contactId: number, companyId: number): Promise<ChatSession> {
+    const { data: session, error } = await this.supabase
+      .from('chat_sessions')
+      .insert({
+        contact_id: contactId,
+        company_id: companyId,
+        status: 'active',
+        metadata: {},
+        started_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return new ChatSessionEntity(session)
   }
 } 

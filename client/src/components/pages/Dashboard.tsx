@@ -3,8 +3,19 @@ import { StatsGrid } from '../dashboard/StatsGrid'
 import { RecentActivity } from '../dashboard/RecentActivity'
 import { QuickActions } from '../dashboard/QuickActions'
 import { TicketTrends, ContactGrowth } from '../dashboard/Charts'
+import { useCompanyStats } from '../../hooks/useCompanyStats'
 
 export default function Dashboard() {
+  const { data, isLoading, error } = useCompanyStats("1");
+
+  // Add console log to see the query state
+  console.log('Dashboard Query State:', { data, isLoading, error });
+
+  if (error) {
+    console.error('Dashboard Error:', error);
+    return <div>Error loading dashboard data</div>;
+  }
+
   return (
     <>
       <Suspense fallback={<div>Loading stats...</div>}>

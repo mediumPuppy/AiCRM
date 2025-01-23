@@ -431,7 +431,8 @@ CREATE TABLE IF NOT EXISTS public.chat_sessions (
     ended_at TIMESTAMPTZ,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    last_message_at TIMESTAMPTZ
 );
 
 CREATE TRIGGER chat_sessions_updated_at

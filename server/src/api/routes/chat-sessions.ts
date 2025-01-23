@@ -65,7 +65,10 @@ const getSession: RequestHandler = async (req, res) => {
 const getCompanySessions: RequestHandler = async (req, res) => {
   try {
     const sessions = await chatRepo.findSessionsByCompanyId(Number(req.params.companyId))
-    res.json(sessions)
+    res.json({
+      sessions,
+      total: sessions.length
+    })
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch company chat sessions' })
   }
@@ -149,6 +152,78 @@ const closeSession: RequestHandler = async (req, res) => {
   }
 }
 
+/**
+ * @swagger
+ * /api/chat/sessions/{id}/messages:
+ *   get:
+ *     summary: Get all messages for a chat session
+ */
+const getSessionMessages: RequestHandler = async (req, res) => {
+  try {
+    const messages = await chatRepo.findMessagesBySessionId(Number(req.params.id))
+    res.json(messages)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch chat messages' })
+  }
+}
+
+const getCustomerSessions: RequestHandler = async (req, res) => {
+  try {
+    const sessions = await chatRepo.findSessionsByContact(Number(req.params.contactId))
+    res.json({
+      sessions,
+      total: sessions.length
+    })
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch customer chat sessions' })
+  }
+}
+
+const sendCustomerMessage: RequestHandler = async (req, res) => {
+  try {
+    const message = await chatRepo.createMessage({
+      session_id: Number(req.params.sessionId),
+      sender_type: 'contact',
+      sender_id: req.body.contact_id,
+      message: req.body.message,
+      message_type: 'text',
+      company_id: req.body.company_id,
+      metadata: {}
+    })
+    res.status(201).json(message)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send message' })
+  }
+}
+
+const startCustomerSession: RequestHandler = async (req, res) => {
+  try {
+    const result = await chatRepo.createCustomerSession(
+      Number(req.params.contactId),
+      req.body.company_id
+    )
+    res.status(201).json(result)
+  } catch (error) {
+    console.error('Failed to create customer chat session:', error);
+    res.status(500).json({ 
+      error: 'Failed to create customer chat session',
+      details: error instanceof Error ? error.message : String(error)
+    })
+  }
+}
+
+// Get customer's chat sessions
+router.get('/customer/:contactId/sessions', getCustomerSessions)
+
+// Get specific customer chat session
+router.get('/customer/sessions/:sessionId', getCustomerSessions)
+
+// Start new customer chat session
+router.post('/customer/:contactId/sessions', startCustomerSession)
+
+// Send message in customer chat session
+router.post('/customer/sessions/:sessionId/messages', sendCustomerMessage)
+
 // Route definitions
 router.post('/', createSession)
 router.get('/:id', getSession)
@@ -158,5 +233,6 @@ router.get('/contact/:contactId', getContactSessions)
 router.get('/agent/:agentId', getAgentSessions)
 router.patch('/:id', updateSession)
 router.post('/:id/close', closeSession)
+router.get('/:id/messages', getSessionMessages)
 
 export default router 

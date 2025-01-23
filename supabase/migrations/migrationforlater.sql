@@ -55,3 +55,6 @@ CREATE INDEX IF NOT EXISTS idx_tickets_priority ON public.tickets(company_id, pr
 CREATE INDEX IF NOT EXISTS idx_tickets_assigned_to ON public.tickets(company_id, assigned_to);
 CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON public.tickets(company_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_tickets_subject_description ON public.tickets USING gin(to_tsvector('english', subject || ' ' || description));
+
+ALTER TABLE public.chat_sessions
+ADD COLUMN last_message_at TIMESTAMPTZ;
