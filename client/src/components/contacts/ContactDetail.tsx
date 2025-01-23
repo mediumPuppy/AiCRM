@@ -1,0 +1,200 @@
+import { useState } from 'react';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { formatDate } from '../../utils/formatDate';
+import { useContactDetail } from '@/hooks/useContactDetail';
+import { useUpdateContact } from '@/hooks/useUpdateContact';
+import { ContactNotes } from './ContactNotes';
+import { IconX } from '@tabler/icons-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { useContactTickets } from '@/hooks/useContactTickets';
+import { formatDistanceToNow } from 'date-fns';
+import { Ticket } from '@/api/tickets';
+import { useNotes } from '@/hooks/useNotes';
+import { TicketsTable } from '../tickets/TicketsTable';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+
+interface ContactDetailProps {
+  contactId: number;
+  onClose: () => void;
+  onContactUpdate?: () => void;
+}
+
+type ContactStatus = 'active' | 'archived';
+
+export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDetailProps) {
+  const [selectedTab, setSelectedTab] = useState('details');
+  const { 
+    data: contact, 
+    isLoading, 
+    error
+  } = useContactDetail(contactId);
+  const { notes, isLoading: isLoadingNotes, addNote } = useNotes('contact', contactId);
+  const { updateContact, isUpdating } = useUpdateContact();
+  const { tickets, isLoading: isLoadingTickets } = useContactTickets(contactId);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+
+  const handleStatusChange = async (newStatus: ContactStatus) => {
+    if (!contact) return;
+    try {
+      await updateContact(contactId, { status: newStatus });
+      onContactUpdate?.();
+    } catch (error) {
+      console.error('Failed to update contact status:', error);
+    }
+  };
+
+  const getStatusColor = (status: Ticket['status']) => {
+    const colors = {
+      open: 'default',
+      in_progress: 'secondary',
+      waiting: 'warning',
+      resolved: 'success',
+      closed: 'outline'
+    };
+    return colors[status];
+  };
+
+  const getPriorityColor = (priority: Ticket['priority']) => {
+    const colors = {
+      urgent: 'destructive',
+      high: 'warning',
+      normal: 'default',
+      low: 'outline'
+    };
+    return colors[priority];
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="animate-pulse">Loading contact details...</div>
+      </div>
+    );
+  }
+
+  if (error || !contact) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="text-red-500">Error loading contact details</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-4 border-b">
+        <div className="flex items-center min-w-0">
+          <h2 className="text-lg font-medium truncate">{contact.full_name}</h2>
+          <Badge variant={contact.status === 'active' ? 'default' : 'secondary'} className="ml-2">
+            {contact.status}
+          </Badge>
+        </div>
+        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
+          <IconX className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 min-h-0 flex">
+        {/* Left column */}
+        <div className="flex-1 min-w-0 border-r">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+            <TabsList className="w-full">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="tickets">Tickets</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="details" className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <div className="mt-1">{contact.email || 'No email provided'}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Phone</label>
+                  <div className="mt-1">{contact.phone || 'No phone provided'}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created</label>
+                  <div className="mt-1">{formatDate(contact.created_at)}</div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tickets" className="p-4">
+              <div className="space-y-4">
+                {isLoadingTickets ? (
+                  <div className="text-center py-4">Loading tickets...</div>
+                ) : (
+                  <TicketsTable
+                    tickets={tickets}
+                    isLoading={isLoadingTickets}
+                    pagination={{ page: 1, limit: 10 }}
+                    onPaginationChange={() => {}}
+                    onTicketSelect={setSelectedTicketId}
+                    selectedTicketId={selectedTicketId}
+                  />
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="notes">
+              <ContactNotes 
+                notes={notes || []}
+                onAddNote={addNote}
+                isLoading={isLoadingNotes}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Right column - Metadata */}
+        <div className="hidden lg:block w-80 p-4 space-y-4">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+            <div>
+              <label className="text-sm text-gray-500">Status</label>
+              <Select value={contact.status} onValueChange={(value) => handleStatusChange(value as ContactStatus)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {contact.portal_enabled && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Portal Information
+                </label>
+                <div className="mt-2 text-sm text-gray-600">
+                  <div className="flex justify-between py-1">
+                    <span>Username</span>
+                    <span className="font-medium">{contact.portal_username}</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span>Last Login</span>
+                    <span className="font-medium">
+                      {contact.last_portal_login ? formatDate(contact.last_portal_login) : 'Never'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 

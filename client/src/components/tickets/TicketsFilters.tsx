@@ -42,33 +42,39 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4">
+    <div className="bg-white rounded-lg shadow p-4">
       {/* Basic Filters - Always Visible */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 pb-2">
         <Input
           placeholder="Search tickets..."
           value={filters.search || ''}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-          className="max-w-sm"
+          className="flex-1 max-w-sm"
         />
         
-        <Button
-          variant="outline"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <IconFilter className="mr-2" />
-          Advanced Filters
-        </Button>
-
-        {Object.keys(filters).length > 0 && (
+        <div className="flex gap-2">
           <Button
-            variant="ghost"
-            onClick={clearFilters}
+            variant="outline"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex-1 sm:flex-none"
           >
-            <IconX className="mr-2" />
-            Clear Filters
+            <IconFilter className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Advanced Filters</span>
+            <span className="sm:hidden">Filters</span>
           </Button>
-        )}
+
+          {Object.keys(filters).length > 0 && (
+            <Button
+              variant="ghost"
+              onClick={() => onFiltersChange({})}
+              className="flex-1 sm:flex-none"
+            >
+              <IconX className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Clear Filters</span>
+              <span className="sm:hidden">Clear</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Advanced Filters - Expandable */}
@@ -111,7 +117,7 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
               ...filters, 
               dateRange: range ? [range.from || null, range.to || null] : undefined 
             })}
-            placeholder="Select date range"
+            placeholder="Date range"
           />
         </div>
       )}

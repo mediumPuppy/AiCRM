@@ -3,7 +3,7 @@ import { CompanyBranding } from '../lib/dashboard/types'
 
 const mockBranding: CompanyBranding = {
   primary_color: '#000000',
-  secondary_color: '#ffffff',
+  secondary_color: '#000000',
   accent_color: '#007AFF',
   logo_url: null,
   favicon_url: null,

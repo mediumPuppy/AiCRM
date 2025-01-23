@@ -20,7 +20,7 @@ interface DateRangePickerProps {
 export function DateRangePicker({ 
   value, 
   onChange,
-  placeholder = "Select date range" 
+  placeholder = "Date range" 
 }: DateRangePickerProps) {
   return (
     <Popover>

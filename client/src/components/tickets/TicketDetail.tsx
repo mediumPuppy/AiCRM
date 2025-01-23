@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTicketDetail } from '@/hooks/useTicketDetail'
+import { useTicketConversation } from '@/hooks/useTicketConversation'
 import { TicketHeader } from './TicketHeader'
 import { TicketMetadata } from './TicketMetadata'
 import { TicketConversation } from './TicketConversation'
@@ -9,11 +10,30 @@ import { TicketActions } from './TicketActions'
 interface TicketDetailProps {
   ticketId: number
   onClose: () => void
+  onTicketUpdate?: () => void
 }
 
-export function TicketDetail({ ticketId, onClose }: TicketDetailProps) {
+type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed';
+type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
   const { ticket, isLoading, updateStatus, updatePriority, addNote } = useTicketDetail(ticketId)
+  const { conversation } = useTicketConversation(ticketId)
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
+
+  // Filter notes from conversation
+  const notes = conversation?.filter(item => item.type === 'note') || []
+
+  // Create wrapped update functions that trigger the parent refresh
+  const handleStatusUpdate = async (status: TicketStatus) => {
+    await updateStatus(status);
+    onTicketUpdate?.();
+  };
+
+  const handlePriorityUpdate = async (priority: TicketPriority) => {
+    await updatePriority(priority);
+    onTicketUpdate?.();
+  };
 
   if (isLoading) {
     return <div className="p-6">Loading ticket details...</div>
@@ -24,58 +44,61 @@ export function TicketDetail({ ticketId, onClose }: TicketDetailProps) {
   }
 
   return (
-    <div className="flex h-full">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full">
-        <TicketHeader 
-          ticket={ticket} 
-          onClose={onClose}
-        />
+    <div className="h-full bg-white flex flex-col">
+      <TicketHeader 
+        ticket={ticket} 
+        onClose={onClose}
+      />
 
-        <div className="flex-1 flex gap-4 p-6 overflow-auto">
-          {/* Left Column - Conversation & Notes */}
-          <div className="flex-1">
-            <div className="flex gap-2 mb-4">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 p-6 overflow-auto">
+        {/* Main Column - Conversation & Notes */}
+        <div className="flex-1 order-1 lg:order-1 min-w-0 max-w-3xl flex flex-col">
+          <div className="flex justify-center mb-6">
+            <div className="flex gap-2 p-1 bg-gray-100/80 rounded-lg w-fit">
               <button
-                className={`px-4 py-2 rounded-lg ${
+                className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'conversation' 
-                    ? 'bg-primary text-white' 
-                    : 'bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                 }`}
                 onClick={() => setActiveTab('conversation')}
               >
                 Conversation
               </button>
               <button
-                className={`px-4 py-2 rounded-lg ${
+                className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'notes' 
-                    ? 'bg-primary text-white' 
-                    : 'bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                 }`}
                 onClick={() => setActiveTab('notes')}
               >
                 Internal Notes
               </button>
             </div>
+          </div>
 
+          <div className="max-h-[500px] overflow-y-auto flex-1">
             {activeTab === 'conversation' ? (
               <TicketConversation ticketId={ticketId} />
             ) : (
               <TicketNotes 
-                notes={ticket.internal_notes}
+                notes={notes}
                 onAddNote={addNote}
               />
             )}
           </div>
+        </div>
 
-          {/* Right Column - Metadata & Actions */}
-          <div className="w-80">
+        {/* Right Column - Actions & Metadata */}
+        <div className="lg:w-72 order-2 lg:order-2 flex-shrink-0">
+          <TicketActions 
+            ticket={ticket}
+            onStatusChange={handleStatusUpdate}
+            onPriorityChange={handlePriorityUpdate}
+          />
+          <div className="mt-6">
             <TicketMetadata ticket={ticket} />
-            <TicketActions 
-              ticket={ticket}
-              onStatusChange={updateStatus}
-              onPriorityChange={updatePriority}
-            />
           </div>
         </div>
       </div>

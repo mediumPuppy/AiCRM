@@ -25,7 +25,7 @@ export function useTickets() {
     limit: 10,
   })
 
-  const { data: tickets, isLoading } = useQuery({
+  const { data: tickets, isLoading, refetch } = useQuery({
     queryKey: ['tickets', filters, pagination, companyId],
     queryFn: () => ticketsApi.getFiltered({
       ...filters,
@@ -42,5 +42,6 @@ export function useTickets() {
     setFilters,
     pagination,
     setPagination,
+    refreshTickets: refetch
   }
 } 

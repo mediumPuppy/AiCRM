@@ -71,11 +71,6 @@ export const ticketsApi = {
     return data
   },
 
-  addNote: async (ticketId: number, note: string) => {
-    const { data } = await axios.post(`/api/tickets/${ticketId}/notes`, { note })
-    return data
-  },
-
   updatePriority: async (ticketId: number, priority: Ticket['priority']) => {
     const { data } = await axios.patch(`/api/tickets/${ticketId}`, { priority });
     return data;
@@ -89,5 +84,17 @@ export const ticketsApi = {
   getConversationHistory: async (ticketId: number): Promise<ConversationItem[]> => {
     const { data } = await axios.get(`/api/tickets/${ticketId}/conversation`);
     return data;
-  }
+  },
+
+  createTicket: async (ticketData: {
+    company_id: number;
+    subject: string;
+    description?: string;
+    status: Ticket['status'];
+    priority: Ticket['priority'];
+    contact_id?: number;
+  }): Promise<Ticket> => {
+    const { data } = await axios.post<Ticket>('/api/tickets', ticketData);
+    return data;
+  },
 }; 

@@ -1,23 +1,23 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { CompanyThemeProvider } from './components/providers/company-theme-provider'
+// import { CompanyThemeProvider } from './components/providers/company-theme-provider'
 import Dashboard from './components/pages/Dashboard'
 import { DashboardLayout } from './components/layouts/DashboardLayout'
 import Tickets from './components/pages/Tickets'
+import Contacts from './components/pages/Contacts'
 import { ModalProvider } from './components/providers/modal-provider'
 
 function App() {
   return (
     <BrowserRouter>
-      <CompanyThemeProvider>
+      {/* <CompanyThemeProvider> */}
         <ModalProvider>
           <Routes>
             {/* Dashboard routes - wrapped in DashboardLayout */}
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tickets" element={<Tickets />} />
-              {/* Add other dashboard routes as you create them:
-              <Route path="/tickets" element={<Tickets />} />
               <Route path="/contacts" element={<Contacts />} />
+              {/* Add other dashboard routes as you create them:
               <Route path="/chats" element={<Chats />} /> 
               */}
             </Route>
@@ -27,7 +27,7 @@ function App() {
             {/* <Route path="/register" element={<Register />} /> */}
           </Routes>
         </ModalProvider>
-      </CompanyThemeProvider>
+      {/* </CompanyThemeProvider> */}
     </BrowserRouter>
   )
 }
