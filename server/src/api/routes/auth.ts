@@ -22,18 +22,14 @@ const SALT_ROUNDS = 10;
 const adminSignup: RequestHandler = async (req, res): Promise<void> => {
   try {
     const { full_name, email, password } = req.body;
-    console.log('1. Signup attempt:', { full_name, email }); // Don't log password
-
     // Validate required fields
     if (!full_name || !email || !password) {
-      console.log('2. Missing required fields');
       res.status(400).json({ error: 'Missing required fields' });
       return;
     }
 
     // Check if user already exists
     const existingUser = await userRepo.findByEmail(email);
-    console.log('3. Existing user check:', !!existingUser);
     if (existingUser) {
       res.status(409).json({ error: 'Email already registered' });
       return;
@@ -41,7 +37,6 @@ const adminSignup: RequestHandler = async (req, res): Promise<void> => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    console.log('4. Password hashed');
     
     const userData = {
       company_id: 1,
@@ -53,10 +48,8 @@ const adminSignup: RequestHandler = async (req, res): Promise<void> => {
       team_id: null,
       last_login_ip: req.ip || null
     };
-    console.log('5. User data prepared:', { ...userData, password: '[REDACTED]' });
 
     const user = await userRepo.create(userData);
-    console.log('6. User created:', { id: user.id, email: user.email });
 
     // Generate JWT
     const token = jwt.sign(

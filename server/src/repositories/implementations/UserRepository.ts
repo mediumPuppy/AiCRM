@@ -9,7 +9,6 @@ export class UserRepository implements IUserRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async create(data: CreateUserDTO): Promise<User> {
-    console.log('A. Starting user creation');
     
     // First insert the user
     const { data: inserted, error: insertError } = await this.supabase
@@ -17,7 +16,6 @@ export class UserRepository implements IUserRepository {
       .insert(data);
 
     if (insertError) {
-      console.error('B. Insert error:', insertError);
       throw insertError;
     }
 

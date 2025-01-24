@@ -9,13 +9,27 @@ export class ContactRepository implements IContactRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async create(data: CreateContactDTO): Promise<Contact> {
-    const { data: contact, error } = await this.supabase
+    
+    // First insert the contact
+    const { data: inserted, error: insertError } = await this.supabase
       .from(this.tableName)
-      .insert(data)
-      .select()
-      .single();
+      .insert(data);
 
-    if (error) throw error;
+    if (insertError) {
+      throw insertError;
+    }
+
+    // Then fetch the newly created contact
+    const { data: contact, error: selectError } = await this.supabase
+      .from(this.tableName)
+      .select()
+      .eq('email', data.email)
+      .maybeSingle();
+
+    if (selectError) {
+      throw selectError;
+    }
+
     return new ContactEntity(contact);
   }
 
@@ -33,11 +47,13 @@ export class ContactRepository implements IContactRepository {
   async findByEmail(email: string): Promise<Contact | null> {
     const { data: contact, error } = await this.supabase
       .from(this.tableName)
-      .select()
+      .select('*')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return contact ? new ContactEntity(contact) : null;
   }
 

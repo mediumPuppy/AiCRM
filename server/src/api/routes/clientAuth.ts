@@ -122,9 +122,9 @@ const clientLogin: RequestHandler = async (req, res): Promise<void> => {
 
     // Update last login timestamp
     await contactRepo.update(contact.id, {
+      last_portal_login: new Date(),
       metadata: {
         ...contact.metadata,
-        last_login_at: new Date().toISOString(),
         last_login_ip: req.ip
       }
     });

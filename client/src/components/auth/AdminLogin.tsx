@@ -23,19 +23,11 @@ export const AdminLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('1. Attempting login...');
       const { data } = await axios.post<AuthResponse>('/api/admin/login', credentials);
-      console.log('2. Login response:', { token: data.token ? '[PRESENT]' : '[MISSING]', user: data.user });
-      
       login(data.token, data.user!);
-      console.log('3. Auth context updated');
-      
       const from = (location.state as any)?.from?.pathname || '/dashboard';
-      console.log('4. Navigating to:', from);
-      
       navigate(from, { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);

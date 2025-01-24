@@ -16,6 +16,7 @@ import { ClientSignup } from './components/auth/ClientSignup'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { UnauthorizedPage } from './components/auth/UnauthorizedPage'
+import CustomerProfile from './components/customer/pages/CustomerProfile'
 
 function App() {
   const ChatSessionDetailWrapper = () => {
@@ -93,6 +94,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ChatSessionDetailWrapper />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/customer/profile" 
+                element={
+                  <ProtectedRoute>
+                    <CustomerProfile />
                   </ProtectedRoute>
                 } 
               />

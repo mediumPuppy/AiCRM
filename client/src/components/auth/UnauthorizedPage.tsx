@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/button';
 
 export const UnauthorizedPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,20 +16,25 @@ export const UnauthorizedPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full text-center p-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Access Denied
-        </h1>
-        <p className="text-gray-600 mb-8">
-          You don't have permission to access this page.
-        </p>
-        <button
-          onClick={handleClick}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          Return to Home
-        </button>
+    <div className="w-screen min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-md mx-4 space-y-8 p-8 bg-white rounded-lg shadow-lg border border-border">
+        <div>
+          <h2 className="text-center text-3xl font-bold tracking-tight text-foreground">
+            Access Denied
+          </h2>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            You don't have permission to access this page.
+          </p>
+        </div>
+        
+        <div className="flex justify-center">
+          <Button
+            onClick={handleClick}
+            className="w-full max-w-xs"
+          >
+            Return to Home
+          </Button>
+        </div>
       </div>
     </div>
   );

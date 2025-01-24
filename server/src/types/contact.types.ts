@@ -17,4 +17,6 @@ export type Contact = {
 };
 
 export type CreateContactDTO = Omit<Contact, 'id' | 'created_at' | 'updated_at' | 'archived_at' | 'last_portal_login'>;
-export type UpdateContactDTO = Partial<Omit<CreateContactDTO, 'company_id'>>; 
+export type UpdateContactDTO = Partial<
+  Omit<Contact, 'id' | 'created_at' | 'updated_at' | 'archived_at' | 'company_id'>
+>; 
