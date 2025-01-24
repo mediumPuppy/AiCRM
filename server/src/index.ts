@@ -1,3 +1,11 @@
+import 'module-alias/register'
+import { addAliases } from 'module-alias'
+
+// Add path aliases
+addAliases({
+  '@': __dirname
+})
+
 import express from 'express'
 import { specs, swaggerUi } from './swagger'
 
