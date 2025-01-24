@@ -15,6 +15,8 @@ import teamRoutes from './api/routes/teams'
 import ticketRoutes from './api/routes/tickets'
 import userRoutes from './api/routes/users'
 import webhookRoutes from './api/routes/webhooks'
+import authRoutes from './api/routes/auth'
+import clientAuthRoutes from './api/routes/clientAuth'
 
 const app = express()
 app.use(express.json())
@@ -34,6 +36,8 @@ app.use('/api/teams', teamRoutes)
 app.use('/api/tickets', ticketRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/webhooks', webhookRoutes)
+app.use('/api', authRoutes)
+app.use('/api', clientAuthRoutes)
 
 // Add before your routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))

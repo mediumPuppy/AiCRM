@@ -1,5 +1,26 @@
 import rateLimit from 'express-rate-limit';
 
+// General API rate limiter
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: { error: 'Too many requests, please try again later' }
+});
+
+// More strict limiter for authentication routes
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: { error: 'Too many authentication attempts, please try again later' }
+});
+
+// Limiter for user write operations
+export const userWriteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: { error: 'Too many user write attempts, please try again later' }
+});
+
 export const apiKeyAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per window
@@ -112,12 +133,6 @@ export const userReadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10000, // Limit each IP to 10000 requests per window
   message: { error: 'Too many user read attempts, please try again later' }
-});
-
-export const userWriteLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 1000, // Limit each IP to 1000 write operations per hour
-  message: { error: 'Too many user write attempts, please try again later' }
 });
 
 export const webhookReadLimiter = rateLimit({

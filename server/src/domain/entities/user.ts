@@ -21,8 +21,8 @@ export class UserEntity implements User {
     this.full_name = data.full_name;
     this.email = data.email;
     this.password = data.password;
-    this.created_at = new Date(data.created_at);
-    this.updated_at = new Date(data.updated_at);
+    this.created_at = data.created_at ? new Date(data.created_at) : new Date();
+    this.updated_at = data.updated_at ? new Date(data.updated_at) : new Date();
     this.archived_at = data.archived_at ? new Date(data.archived_at) : null;
     this.status = data.status;
     this.team_id = data.team_id;

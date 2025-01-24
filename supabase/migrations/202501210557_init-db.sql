@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS public.tickets (
   priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low','normal','high','urgent')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
+  closed_at  TIMESTAMPTZ,
   metadata JSONB
 );
 

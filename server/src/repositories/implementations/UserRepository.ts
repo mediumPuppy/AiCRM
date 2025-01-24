@@ -9,13 +9,31 @@ export class UserRepository implements IUserRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async create(data: CreateUserDTO): Promise<User> {
-    const { data: user, error } = await this.supabase
+    console.log('A. Starting user creation');
+    
+    // First insert the user
+    const { data: inserted, error: insertError } = await this.supabase
       .from(this.tableName)
-      .insert(data)
+      .insert(data);
+
+    if (insertError) {
+      console.error('B. Insert error:', insertError);
+      throw insertError;
+    }
+
+    // Then fetch the newly created user
+    const { data: user, error: selectError } = await this.supabase
+      .from(this.tableName)
       .select()
+      .eq('email', data.email)
       .single();
 
-    if (error) throw error;
+    if (selectError) {
+      console.error('C. Select error:', selectError);
+      throw selectError;
+    }
+
+    console.log('D. User fetched:', { id: user.id, email: user.email });
     return new UserEntity(user);
   }
 
@@ -33,11 +51,14 @@ export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     const { data: user, error } = await this.supabase
       .from(this.tableName)
-      .select()
+      .select('*')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Find by email error:', error);
+      throw error;
+    }
     return user ? new UserEntity(user) : null;
   }
 
