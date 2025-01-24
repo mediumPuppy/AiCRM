@@ -49,7 +49,8 @@ describe('Chat Sessions Routes', () => {
     ended_at: null,
     metadata: {},
     created_at: new Date(),
-    updated_at: new Date()
+    updated_at: new Date(),
+    last_message_at: new Date()
   }
 
   describe('POST /chat/sessions', () => {
