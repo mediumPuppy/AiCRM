@@ -1,5 +1,6 @@
 import 'module-alias/register'
 import { addAliases } from 'module-alias'
+import path from 'path'
 
 // Add path aliases
 addAliases({
@@ -30,6 +31,9 @@ import activityRoutes from './api/routes/activity'
 const app = express()
 app.use(express.json())
 
+// Serve static files from the React client
+app.use(express.static(path.join(__dirname, '../../client/dist')))
+
 // API Routes
 app.use('/api/api-keys', apiKeysRouter)
 app.use('/api/articles', articleRoutes)
@@ -51,6 +55,11 @@ app.use('/api/activity', activityRoutes)
 
 // Add before your routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/dist/index.html'))
+})
 
 // Only start server if not being imported for tests
 if (require.main === module) {
