@@ -1,4 +1,5 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useChatSessions } from '@/hooks/useChatSessions'
 import { TablePageHeader } from '../ui/table-page-header'
 import { ChatSessionsTable } from '../chat-sessions/ChatSessionsTable'
@@ -10,6 +11,7 @@ import { useTicketCreate } from '@/hooks/useTicketCreate'
 import { Input } from '../ui/input'
 
 export default function ChatSessions() {
+  const [searchParams] = useSearchParams()
   const { toast } = useToast()
 
   const {
@@ -22,6 +24,7 @@ export default function ChatSessions() {
     refreshSessions,
     startNewSession,
   } = useChatSessions()
+
   
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null)
   const [showContactSearch, setShowContactSearch] = useState(false)
@@ -29,6 +32,16 @@ export default function ChatSessions() {
   const [selectedContact, setSelectedContact] = useState<any>(null)
 
   const { contacts, isLoadingContacts } = useTicketCreate()
+
+  // Handle URL parameters for panels
+  useEffect(() => {
+    const action = searchParams.get('action')
+    const panel = searchParams.get('panel')
+    
+    if (action === 'create' && panel === 'new') {
+      setShowContactSearch(true)
+    }
+  }, [searchParams])
 
   const handleStartNewSession = async () => {
     if (!selectedContact?.id) {

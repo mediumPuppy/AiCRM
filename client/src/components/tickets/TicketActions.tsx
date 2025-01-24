@@ -7,18 +7,27 @@ import {
 } from '../ui/select'
 import { Button } from '../ui/button'
 import type { Ticket } from '@/api/tickets'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
 
 interface TicketActionsProps {
   ticket: Ticket
   onStatusChange: (status: Ticket['status']) => void
   onPriorityChange: (priority: Ticket['priority']) => void
+  onAssignToMe: () => void
+  onUnassign: () => void
 }
 
 export function TicketActions({
   ticket,
   onStatusChange,
   onPriorityChange,
+  onAssignToMe,
+  onUnassign,
 }: TicketActionsProps) {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  
   const statusOptions = [
     { value: 'open', label: 'Open' },
     { value: 'in_progress', label: 'In Progress' },
@@ -33,6 +42,40 @@ export function TicketActions({
     { value: 'high', label: 'High' },
     { value: 'urgent', label: 'Urgent' },
   ]
+
+  const handleAssignToMe = async () => {
+    try {
+      await onAssignToMe()
+      toast({
+        title: 'Success',
+        description: 'Ticket assigned to you successfully',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to assign ticket',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleUnassign = async () => {
+    try {
+      await onUnassign()
+      toast({
+        title: 'Success',
+        description: 'Ticket unassigned successfully',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to unassign ticket',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const isAssignedToMe = ticket.assigned_to === user?.id
 
   return (
     <div className="bg-gray-50 rounded-lg p-4">
@@ -71,10 +114,24 @@ export function TicketActions({
           </Select>
         </div>
 
-        <div className="pt-2">
-          <Button className="w-full">
-            Assign to Me
+        <div className="pt-2 space-y-2">
+          <Button 
+            className="w-full"
+            onClick={handleAssignToMe}
+            disabled={isAssignedToMe}
+          >
+            {isAssignedToMe ? 'Assigned to You' : 'Assign to Me'}
           </Button>
+
+          {isAssignedToMe && (
+            <Button 
+              variant="outline"
+              className="w-full text-gray-600"
+              onClick={handleUnassign}
+            >
+              Unassign from Me
+            </Button>
+          )}
         </div>
       </div>
     </div>

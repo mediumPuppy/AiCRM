@@ -95,4 +95,14 @@ export const ticketsApi = {
     const { data } = await axios.post<Ticket>('/api/tickets', ticketData);
     return data;
   },
+
+  assignTicket: async (ticketId: number, userId: number): Promise<Ticket> => {
+    const { data } = await axios.patch<Ticket>(`/api/tickets/${ticketId}`, { assigned_to: userId });
+    return data;
+  },
+
+  unassignTicket: async (ticketId: number): Promise<Ticket> => {
+    const { data } = await axios.patch<Ticket>(`/api/tickets/${ticketId}`, { assigned_to: null });
+    return data;
+  },
 }; 

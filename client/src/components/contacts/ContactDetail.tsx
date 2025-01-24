@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import { formatDate } from '../../utils/formatDate';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useUpdateContact } from '@/hooks/useUpdateContact';
 import { ContactNotes } from './ContactNotes';
 import { IconX } from '@tabler/icons-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { useContactTickets } from '@/hooks/useContactTickets';
 import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
@@ -38,7 +39,7 @@ interface ContactDetailProps {
 type ContactStatus = 'active' | 'archived';
 
 export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDetailProps) {
-  const [selectedTab, setSelectedTab] = useState('details');
+  const [selectedTab, setSelectedTab] = useState<'details' | 'tickets' | 'notes'>('details');
   const [pendingStatus, setPendingStatus] = useState<ContactStatus | null>(null);
   const { 
     data: contact, 
@@ -61,27 +62,6 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
     }
   };
 
-  // const getStatusColor = (status: Ticket['status']) => {
-  //   const colors = {
-  //     open: 'default',
-  //     in_progress: 'secondary',
-  //     waiting: 'warning',
-  //     resolved: 'success',
-  //     closed: 'outline'
-  //   };
-  //   return colors[status];
-  // };
-
-  // const getPriorityColor = (priority: Ticket['priority']) => {
-  //   const colors = {
-  //     urgent: 'destructive',
-  //     high: 'warning',
-  //     normal: 'default',
-  //     low: 'outline'
-  //   };
-  //   return colors[priority];
-  // };
-
   if (isLoading) {
     return (
       <div className="h-full w-full flex items-center justify-center">
@@ -101,7 +81,7 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b">
+      <div className="flex items-center justify-between px-6 py-4 border-b">
         <div className="flex items-center min-w-0">
           <h2 className="text-lg font-medium truncate">{contact.full_name}</h2>
           <Badge variant={contact.status === 'active' ? 'default' : 'secondary'} className="ml-2">
@@ -117,31 +97,62 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
       <div className="flex-1 min-h-0 flex">
         {/* Left column */}
         <div className="flex-1 min-w-0 border-r">
-          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="w-full">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="tickets">Tickets</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
+          {/* Custom Tabs */}
+          <div className="flex justify-center p-6 pb-0">
+            <div className="flex gap-2 p-1 bg-gray-100/80 rounded-lg w-fit">
+              <button
+                className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
+                  selectedTab === 'details' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                }`}
+                onClick={() => setSelectedTab('details')}
+              >
+                Details
+              </button>
+              <button
+                className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
+                  selectedTab === 'tickets' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                }`}
+                onClick={() => setSelectedTab('tickets')}
+              >
+                Tickets
+              </button>
+              <button
+                className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
+                  selectedTab === 'notes' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                }`}
+                onClick={() => setSelectedTab('notes')}
+              >
+                Notes
+              </button>
+            </div>
+          </div>
 
-            <TabsContent value="details" className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <div className="mt-1">{contact.email || 'No email provided'}</div>
+          {/* Tab Content */}
+          <div className="p-6 pt-4">
+            {selectedTab === 'details' && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <div className="text-sm">{contact.email || 'No email provided'}</div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <div className="mt-1">{contact.phone || 'No phone provided'}</div>
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <div className="text-sm">{contact.phone || 'No phone provided'}</div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Created</label>
-                  <div className="mt-1">{formatDate(contact.created_at)}</div>
+                <div className="space-y-2">
+                  <Label>Created</Label>
+                  <div className="text-sm">{formatDate(contact.created_at)}</div>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            <TabsContent value="tickets" className="p-4">
+            {selectedTab === 'tickets' && (
               <div className="space-y-4">
                 {isLoadingTickets ? (
                   <div className="text-center py-4">Loading tickets...</div>
@@ -172,31 +183,33 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
                   </>
                 )}
               </div>
-            </TabsContent>
+            )}
 
-            <TabsContent value="notes">
-              <ContactNotes 
-                notes={notes || []}
-                onAddNote={addNote}
-                isLoading={isLoadingNotes}
-              />
-            </TabsContent>
-          </Tabs>
+            {selectedTab === 'notes' && (
+              <div className="h-[calc(100vh-15rem)]">
+                <ContactNotes 
+                  notes={notes || []}
+                  onAddNote={addNote}
+                  isLoading={isLoadingNotes}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right column - Metadata */}
-        <div className="hidden lg:block w-72 p-4 space-y-4">
+        <div className="hidden lg:block w-72 p-6 space-y-6">
           <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-            <div>
-              <label className="text-sm text-gray-500">Status</label>
+            <div className="space-y-2">
+              <Label>Status</Label>
               <Select 
                 value={contact.status} 
                 onValueChange={(value: ContactStatus) => setPendingStatus(value)}
               >
-                <SelectTrigger className="mt-1 w-36">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent position="popper" side="bottom" align="start" className="w-36">
+                <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
@@ -204,18 +217,16 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
             </div>
 
             {contact.portal_enabled && (
-              <div>
-                <label className="block text-sm text-gray-500">
-                  Portal Information
-                </label>
-                <div className="mt-2 text-sm text-gray-600">
-                  <div className="flex justify-between py-1">
-                    <span>Username</span>
-                    <span className="font-medium">{contact.portal_username}</span>
+              <div className="space-y-2">
+                <Label>Portal Information</Label>
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Username</span>
+                    <span>{contact.portal_username}</span>
                   </div>
-                  <div className="flex justify-between py-1">
-                    <span>Last Login</span>
-                    <span className="font-medium">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Last Login</span>
+                    <span>
                       {contact.last_portal_login ? formatDate(contact.last_portal_login) : 'Never'}
                     </span>
                   </div>
@@ -227,16 +238,16 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
 
         {/* Mobile/Tablet Status Section */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-gray-500">Status</label>
+          <div className="space-y-2">
+            <Label>Status</Label>
             <Select 
               value={contact.status} 
               onValueChange={(value: ContactStatus) => setPendingStatus(value)}
             >
-              <SelectTrigger className="w-36">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent position="popper" side="top" align="end" className="w-36">
+              <SelectContent side="top">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>

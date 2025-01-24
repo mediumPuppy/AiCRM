@@ -17,7 +17,7 @@ type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
-  const { ticket, isLoading, updateStatus, updatePriority, addNote } = useTicketDetail(ticketId)
+  const { ticket, isLoading, updateStatus, updatePriority, addNote, assignToMe, unassign } = useTicketDetail(ticketId)
   const { conversation } = useTicketConversation(ticketId)
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
 
@@ -32,6 +32,11 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
 
   const handlePriorityUpdate = async (priority: TicketPriority) => {
     await updatePriority(priority);
+    onTicketUpdate?.();
+  };
+
+  const handleUnassign = async () => {
+    await unassign();
     onTicketUpdate?.();
   };
 
@@ -96,6 +101,8 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
             ticket={ticket}
             onStatusChange={handleStatusUpdate}
             onPriorityChange={handlePriorityUpdate}
+            onAssignToMe={assignToMe}
+            onUnassign={handleUnassign}
           />
           <div className="mt-6">
             <TicketMetadata ticket={ticket} />

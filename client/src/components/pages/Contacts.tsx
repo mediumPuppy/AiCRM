@@ -1,12 +1,15 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ContactsTable } from '../contacts/ContactsTable'
 import { ContactsFilters } from '../contacts/ContactsFilters'
 import { useContacts } from '@/hooks/useContacts'
 import { ContactDetail } from '../contacts/ContactDetail'
+import { ContactCreate } from '../contacts/ContactCreate'
 import { TablePageHeader } from '../ui/table-page-header'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function Contacts() {
+  const [searchParams] = useSearchParams()
   const { user, contact } = useAuth()
   const companyId = user?.company_id || contact?.company_id
   if (!companyId) throw new Error('No company ID found in auth context')
@@ -21,6 +24,17 @@ export default function Contacts() {
     refreshContacts,
   } = useContacts(companyId)
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null)
+  const [isCreatingContact, setIsCreatingContact] = useState(false)
+
+  // Handle URL parameters for panels
+  useEffect(() => {
+    const action = searchParams.get('action')
+    const panel = searchParams.get('panel')
+    
+    if (action === 'create' && panel === 'new') {
+      setIsCreatingContact(true)
+    }
+  }, [searchParams])
 
   return (
     <div className="flex h-full">
@@ -28,7 +42,7 @@ export default function Contacts() {
         <TablePageHeader
           title="Contacts"
           buttonLabel="New Contact"
-          onAction={() => {/* implement new contact modal */}}
+          onAction={() => setIsCreatingContact(true)}
         />
         
         <ContactsFilters 
@@ -50,9 +64,17 @@ export default function Contacts() {
         </div>
       </div>
 
-      {/* Right Side Panel - Contact Details */}
+      {/* Right Side Panel - Contact Details/Create */}
       <div className="hidden xl:block w-[750px] border-l border-gray-200 flex-shrink-0">
-        {selectedContactId ? (
+        {isCreatingContact ? (
+          <ContactCreate
+            onClose={() => setIsCreatingContact(false)}
+            onContactCreated={() => {
+              refreshContacts()
+              setIsCreatingContact(false)
+            }}
+          />
+        ) : selectedContactId ? (
           <ContactDetail 
             contactId={selectedContactId} 
             onClose={() => setSelectedContactId(null)}
@@ -68,14 +90,24 @@ export default function Contacts() {
         )}
       </div>
 
-      {/* Mobile Contact Detail Modal */}
-      {selectedContactId && (
+      {/* Mobile Contact Detail/Create Modal */}
+      {(selectedContactId || isCreatingContact) && (
         <div className="fixed inset-0 z-50 xl:hidden bg-white overflow-auto">
-          <ContactDetail 
-            contactId={selectedContactId} 
-            onClose={() => setSelectedContactId(null)}
-            onContactUpdate={refreshContacts}
-          />
+          {isCreatingContact ? (
+            <ContactCreate
+              onClose={() => setIsCreatingContact(false)}
+              onContactCreated={() => {
+                refreshContacts()
+                setIsCreatingContact(false)
+              }}
+            />
+          ) : (
+            <ContactDetail 
+              contactId={selectedContactId!} 
+              onClose={() => setSelectedContactId(null)}
+              onContactUpdate={refreshContacts}
+            />
+          )}
         </div>
       )}
     </div>

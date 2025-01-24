@@ -4,7 +4,13 @@ import { CardHeader } from "../ui/card"
 import { CardContent } from "../ui/card"
 import { useCompanyBranding } from "@/hooks/useCompanyBranding"
 
-export function QuickActions() {
+interface QuickActionsProps {
+  onNewTicket: () => void
+  onStartChat: () => void
+  onNewContact: () => void
+}
+
+export function QuickActions({ onNewTicket, onStartChat, onNewContact }: QuickActionsProps) {
   const { branding } = useCompanyBranding()
   
   return (
@@ -19,6 +25,7 @@ export function QuickActions() {
           style={{
             borderRadius: branding?.button_style === 'pill' ? '9999px' : branding?.border_radius
           }}
+          onClick={onNewTicket}
         >
           New Ticket
         </Button>
@@ -28,6 +35,7 @@ export function QuickActions() {
           style={{
             borderRadius: branding?.button_style === 'pill' ? '9999px' : branding?.border_radius
           }}
+          onClick={onStartChat}
         >
           Start Chat
         </Button>
@@ -37,6 +45,7 @@ export function QuickActions() {
           style={{
             borderRadius: branding?.button_style === 'pill' ? '9999px' : branding?.border_radius
           }}
+          onClick={onNewContact}
         >
           Add Contact
         </Button>

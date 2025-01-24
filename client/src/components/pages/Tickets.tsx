@@ -1,4 +1,5 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TicketsTable } from '../tickets/TicketsTable'
 import { TicketsFilters } from '../tickets/TicketsFilters'
 import { useTickets } from '@/hooks/useTickets'
@@ -7,6 +8,7 @@ import { TablePageHeader } from '../ui/table-page-header'
 import { TicketCreate } from '../tickets/TicketCreate'
 
 export default function Tickets() {
+  const [searchParams] = useSearchParams()
   const {
     tickets,
     isLoading,
@@ -18,6 +20,16 @@ export default function Tickets() {
   } = useTickets()
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null)
   const [isCreatingTicket, setIsCreatingTicket] = useState(false)
+
+  // Handle URL parameters for panels
+  useEffect(() => {
+    const action = searchParams.get('action')
+    const panel = searchParams.get('panel')
+    
+    if (action === 'create' && panel === 'new') {
+      setIsCreatingTicket(true)
+    }
+  }, [searchParams])
 
   return (
     <div className="flex h-full">

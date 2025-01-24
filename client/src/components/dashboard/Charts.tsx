@@ -43,6 +43,8 @@ const mockTicketData = {
 
 const options = {
   responsive: true,
+  maintainAspectRatio: true,
+  aspectRatio: 2,
   plugins: {
     legend: {
       position: 'top' as const,
@@ -58,7 +60,7 @@ export function TicketTrends() {
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Ticket Activity</h2>
-      <div className="h-[300px]">
+      <div className="w-full">
         <Line options={options} data={mockTicketData} />
       </div>
       <div className="grid grid-cols-3 gap-4 mt-4">
