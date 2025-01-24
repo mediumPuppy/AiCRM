@@ -6,7 +6,7 @@ import { TicketTrends, ContactGrowth } from '../dashboard/Charts'
 import { useCompanyStats } from '../../hooks/useCompanyStats'
 
 export default function Dashboard() {
-  const { data, isLoading, error } = useCompanyStats("1");
+  const { error } = useCompanyStats("1");
 
   if (error) {
     return <div>Error loading dashboard data</div>;
