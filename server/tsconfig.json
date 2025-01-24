@@ -10,14 +10,16 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     },
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,
-    "esm": false
+    "esm": false,
+    "require": ["tsconfig-paths/register"]
   }
 }
