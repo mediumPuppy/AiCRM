@@ -3,15 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Full stack CRM platform with Supabase, server, and client",
   "scripts": {
-    "dev": "supabase start",
-    "build": "supabase stop && tsc -b && vite build",
+    "dev": "concurrently \"npm run supabase:start\" \"npm run server\" \"npm run client\"",
+    "build": "npm run supabase:stop && cd server && npm install && npm run build && cd ../client && npm install && npm run build",
+    "start": "cd server && npm run start",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
     "supabase:start": "supabase start",
-    "supabase:stop": "supabase stop"
+    "supabase:stop": "supabase stop",
+    "migrate": "cd server && npm run migrate"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.0"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
