@@ -13,7 +13,7 @@ import { AdminLogin } from './components/auth/AdminLogin'
 import { AdminSignup } from './components/auth/AdminSignup'
 import { ClientLogin } from './components/auth/ClientLogin'
 import { ClientSignup } from './components/auth/ClientSignup'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { UnauthorizedPage } from './components/auth/UnauthorizedPage'
 import CustomerProfile from './components/customer/pages/CustomerProfile'
@@ -29,6 +29,11 @@ function App() {
         onClose={() => navigate('/customer/chat/sessions')} 
       />
     );
+  };
+
+  const RootRedirect = () => {
+    const { user } = useAuth();
+    return <Navigate to={user?.role === 'admin' ? "/dashboard" : "/customer/chat/sessions"} replace />;
   };
 
   return (
@@ -112,7 +117,7 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <Navigate to="/dashboard" replace />
+                  <RootRedirect />
                 </ProtectedRoute>
               }
             />
