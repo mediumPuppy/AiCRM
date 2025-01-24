@@ -47,6 +47,10 @@ export function Sidebar({ onClose }: SidebarProps) {
         <Link to="/chats" className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent">
           Chat Sessions
         </Link>
+
+        <Link to="/articles" className="flex items-center space-x-2 px-3 py-2 text-sm rounded-md hover:bg-accent">
+          <span>Articles</span>
+        </Link>
       </nav>
 
       {/* Sign Out Button - Added at bottom */}

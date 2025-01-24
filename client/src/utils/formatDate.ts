@@ -4,7 +4,7 @@ type DateFormatOptions = {
   format?: 'default' | 'table';
 };
 
-export function formatDate(date: string | Date, options: DateFormatOptions = { includeTime: true, includeYear: false }) {
+export function formatDate(date: string | Date, options: DateFormatOptions = { includeTime: true, includeYear: true }) {
   const dateObj = date instanceof Date ? date : new Date(date);
 
   if (isNaN(dateObj.getTime())) {
@@ -39,6 +39,6 @@ export function formatDate(date: string | Date, options: DateFormatOptions = { i
 }
 
 // Usage examples:
-// formatDate('2024-03-14T15:30:00Z')                    -> "Mar 14, 3:30 PM"
-// formatDate('2024-03-14T15:30:00Z', { includeYear: true }) -> "Mar 14, 2024, 3:30 PM"
-// formatDate('2024-03-14T15:30:00Z', { includeTime: false }) -> "Mar 14" 
+// formatDate('2024-03-14T15:30:00Z')                    -> "Mar 14, 2024, 3:30 PM"
+// formatDate('2024-03-14T15:30:00Z', { includeYear: false }) -> "Mar 14, 3:30 PM"
+// formatDate('2024-03-14T15:30:00Z', { includeTime: false }) -> "Mar 14, 2024" 

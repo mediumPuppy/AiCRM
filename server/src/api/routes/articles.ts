@@ -21,44 +21,32 @@ const articleRepo = new ArticleRepository(supabase);
  *         schema:
  *           type: integer
  *       - in: query
- *         name: category
+ *         name: search
  *         schema:
  *           type: string
  *       - in: query
- *         name: published
+ *         name: status
  *         schema:
- *           type: boolean
- *       - in: query
- *         name: companyId
- *         schema:
- *           type: integer
+ *           type: string
+ *           enum: ['all', 'draft', 'published', 'archived']
  */
 const getArticles: RequestHandler = async (req, res) => {
   try {
-    
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const category = req.query.category as string;
-    const published = req.query.published === 'true';
-    const companyId = req.query.companyId ? Number(req.query.companyId) : undefined;
-
+    const search = req.query.search as string;
+    const status = req.query.status as 'all' | 'draft' | 'published' | 'archived';
 
     const { articles, total } = await articleRepo.findAll({
       page,
       limit,
-      category,
-      published,
-      companyId
+      search,
+      status: status === 'all' ? undefined : status,
     });
 
     res.json({
-      data: articles,
-      metadata: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
+      articles,
+      total,
     });
   } catch (error) {
     console.error('Article fetch error:', error);
@@ -103,18 +91,18 @@ const searchArticles: RequestHandler = async (req, res) => {
  *         schema:
  *           type: integer
  */
-const getArticleById: RequestHandler = async (req, res, next) => {
-    try {
-      const article = await articleRepo.findById(Number(req.params.id));
-      if (article) {
-        res.json(article);
-      } else {
-        res.status(404).json({ error: 'Article not found' });
-      }
-    } catch (error) {
-      next(error);
+const getArticleById: RequestHandler = async (req, res) => {
+  try {
+    const article = await articleRepo.findById(Number(req.params.id));
+    if (article) {
+      res.json(article);
+    } else {
+      res.status(404).json({ error: 'Article not found' });
     }
-  };
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch article' });
+  }
+};
   
 /**
  * @swagger
@@ -132,15 +120,188 @@ const getArticleById: RequestHandler = async (req, res, next) => {
  *                 type: string
  *               content:
  *                 type: string
- *               category:
+ *               status:
  *                 type: string
+ *                 enum: ['draft', 'published', 'archived']
  */
 const createArticle: RequestHandler = async (req, res) => {
   try {
-    const article = await articleRepo.create(req.body);
+    const { title, content, status = 'draft', author_id, company_id } = req.body;
+    
+    if (!title || !content || !author_id || !company_id) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    const article = await articleRepo.create({
+      title,
+      content,
+      slug: '',  // provide an empty or placeholder string for slug
+      author_id,
+      company_id,
+      status,
+      metadata: {}
+    });
     res.status(201).json(article);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create article' });
+    console.error('Failed to create article:', error);
+    res.status(500).json({ 
+      error: 'Failed to create article',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /api/articles/{id}:
+ *   put:
+ *     summary: Update an article
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: ['draft', 'published', 'archived']
+ */
+const updateArticle: RequestHandler = async (req, res) => {
+  try {
+    const { title, content, status, author_id } = req.body;
+    const articleId = Number(req.params.id);
+
+    const existingArticle = await articleRepo.findById(articleId);
+    if (!existingArticle) {
+      res.status(404).json({ error: 'Article not found' });
+      return;
+    }
+
+    // Only allow certain status transitions
+    if (status && existingArticle.status !== status) {
+      const validTransitions: Record<string, string[]> = {
+        draft: ['published', 'archived'],
+        published: ['archived'],
+        archived: ['draft']
+      };
+
+      if (!validTransitions[existingArticle.status]?.includes(status)) {
+        res.status(400).json({ 
+          error: 'Invalid status transition',
+          details: `Cannot transition from ${existingArticle.status} to ${status}`
+        });
+        return;
+      }
+    }
+
+    const article = await articleRepo.update(articleId, {
+      title,
+      content,
+      status,
+      metadata: existingArticle.metadata || {}
+    });
+    res.json(article);
+  } catch (error) {
+    console.error('Failed to update article:', error);
+    res.status(500).json({ 
+      error: 'Failed to update article',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /api/articles/{id}/publish:
+ *   post:
+ *     summary: Publish an article
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ */
+const publishArticle: RequestHandler = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const articleId = Number(req.params.id);
+
+    const existingArticle = await articleRepo.findById(articleId);
+    if (!existingArticle) {
+      res.status(404).json({ error: 'Article not found' });
+      return;
+    }
+
+    if (existingArticle.status === 'archived') {
+      res.status(400).json({ 
+        error: 'Cannot publish archived article',
+        details: 'Article must be in draft status to be published'
+      });
+      return;
+    }
+
+    // First update the content if provided
+    if (title || content) {
+      await articleRepo.update(articleId, {
+        ...(title && { title }),
+        ...(content && { content })
+      });
+    }
+
+    // Then publish
+    const article = await articleRepo.publish(articleId);
+    res.json(article);
+  } catch (error) {
+    console.error('Failed to publish article:', error);
+    res.status(500).json({ 
+      error: 'Failed to publish article',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /api/articles/{id}:
+ *   delete:
+ *     summary: Delete an article
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ */
+const deleteArticle: RequestHandler = async (req, res) => {
+  try {
+    await articleRepo.delete(Number(req.params.id));
+    res.status(204).end();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete article' });
   }
 };
 
@@ -148,7 +309,8 @@ router.get('/search', articleReadLimiter, searchArticles);
 router.get('/:id', articleReadLimiter, getArticleById);
 router.get('/', articleReadLimiter, getArticles);
 router.post('/', articleWriteLimiter, createArticle);
-
-// Additional endpoints for update, delete, publish/unpublish...
+router.put('/:id', articleWriteLimiter, updateArticle);
+router.post('/:id/publish', articleWriteLimiter, publishArticle);
+router.delete('/:id', articleWriteLimiter, deleteArticle);
 
 export default router; 

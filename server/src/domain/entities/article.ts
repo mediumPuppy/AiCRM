@@ -2,9 +2,8 @@ import { Article } from '../../types/article.types';
 
 export class ArticleEntity implements Article {
   id: number;
-  company_id: number;
-  title: string;
   slug: string;
+  title: string;
   content: string;
   status: Article['status'];
   revision: number;
@@ -16,9 +15,8 @@ export class ArticleEntity implements Article {
 
   constructor(data: Article) {
     this.id = data.id;
-    this.company_id = data.company_id;
-    this.title = data.title;
     this.slug = data.slug;
+    this.title = data.title;
     this.content = data.content;
     this.status = data.status;
     this.revision = data.revision;

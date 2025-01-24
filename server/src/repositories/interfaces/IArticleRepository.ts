@@ -1,12 +1,14 @@
-import { Article, CreateArticleDTO, UpdateArticleDTO, ArticleStatus } from '../../types/article.types';
+import { Article, ArticleStatus, CreateArticleDTO, UpdateArticleDTO } from '../../types/article.types';
+
+interface FindAllParams {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: 'draft' | 'published' | 'archived';
+}
 
 export interface IArticleRepository {
-  findAll(params: {
-    page: number;
-    limit: number;
-    category?: string;
-    published?: boolean;
-  }): Promise<{ articles: Article[]; total: number }>;
+  findAll(params: FindAllParams): Promise<{ articles: Article[]; total: number }>;
   findById(id: number): Promise<Article | null>;
   findBySlug(companyId: number, slug: string): Promise<Article | null>;
   findByCompanyId(companyId: number): Promise<Article[]>;

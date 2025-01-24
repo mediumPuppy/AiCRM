@@ -2,11 +2,10 @@ export type ArticleStatus = 'draft' | 'published' | 'archived';
 
 export type Article = {
   id: number;
-  company_id: number;
   title: string;
-  slug: string;
   content: string;
-  status: 'draft' | 'published' | 'archived';
+  slug: string;
+  status: ArticleStatus;
   revision: number;
   author_id: number | null;
   created_at: string;
@@ -16,20 +15,19 @@ export type Article = {
 };
 
 export type CreateArticleDTO = {
-  company_id: number;
   title: string;
-  slug: string;
   content: string;
+  slug: string;
   author_id: number;
-  status?: 'draft' | 'published' | 'archived';
+  company_id: number;
+  status?: ArticleStatus;
   metadata?: Record<string, any>;
 };
 
 export type UpdateArticleDTO = {
   title?: string;
-  slug?: string;
   content?: string;
-  status?: 'draft' | 'published' | 'archived';
+  status?: ArticleStatus;
   revision?: number;
   metadata?: Record<string, any>;
   published_at?: string | null;

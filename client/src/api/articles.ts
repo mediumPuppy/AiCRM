@@ -1,14 +1,25 @@
 import axios from 'axios';
 
+// Helper function to generate URL-friendly slugs
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 interface Article {
   id: number;
   title: string;
   content: string;
-  category: string;
-  published: boolean;
-  company_id: number;
+  slug: string;
+  status: 'draft' | 'published' | 'archived';
+  revision: number;
+  author_id: number | null;
   created_at: string;
   updated_at: string;
+  published_at: string | null;
+  metadata: Record<string, any> | null;
 }
 
 /** Response from paginated API endpoints */
@@ -24,11 +35,66 @@ export interface PaginatedResponse<T> {
 
 /** Parameters for fetching articles */
 export interface GetArticlesParams {
-  companyId: number;
+  search?: string;
+  status?: 'all' | 'draft' | 'published' | 'archived';
   page: number;
   limit: number;
-  published?: boolean;
-  category?: string;
+  companyId?: number;
+}
+
+interface ArticlesResponse {
+  articles: Article[];
+  total: number;
+}
+
+export async function getArticles(params: GetArticlesParams): Promise<ArticlesResponse> {
+  const { data } = await axios.get('/api/articles', { params });
+  return data;
+}
+
+export async function getArticle(id: number): Promise<Article> {
+  const { data } = await axios.get(`/api/articles/${id}`);
+  return data;
+}
+
+export async function saveArticle(id: number | undefined, data: { title: string; content: string; status: Article['status'] }): Promise<Article> {
+  const author_id = 1; // TODO: Get from auth context
+  const company_id = 1; // TODO: Get from auth context
+  const slug = generateSlug(data.title);
+  const payload = { ...data, author_id, company_id, slug };
+  
+  if (typeof id === 'number') {
+    const { data: response } = await axios.put(`/api/articles/${id}`, payload);
+    return response;
+  } else {
+    const { data: response } = await axios.post('/api/articles', payload);
+    return response;
+  }
+}
+
+export async function publishArticle(id: number | undefined, data: { title: string; content: string }): Promise<Article> {
+  const author_id = 1; // TODO: Get from auth context
+  const company_id = 1; // TODO: Get from auth context
+  const slug = generateSlug(data.title);
+  
+  if (typeof id === 'number') {
+    const { data: response } = await axios.post(`/api/articles/${id}/publish`, { ...data, author_id });
+    return response;
+  } else {
+    const { data: response } = await axios.post('/api/articles', { 
+      ...data, 
+      author_id,
+      company_id,
+      slug,
+      status: 'published',
+      published_at: new Date().toISOString()
+    });
+    return response;
+  }
+}
+
+export async function deleteArticle(id: number): Promise<void> {
+  await axios.delete(`/api/articles/${id}`);
 }
 
 export const articlesApi = {
@@ -37,11 +103,10 @@ export const articlesApi = {
       // Log the request parameters      
       const { data } = await axios.get<PaginatedResponse<Article>>(`/api/articles`, {
         params: {
-          companyId: Number(params.companyId),
+          search: params.search,
+          status: params.status,
           page: params.page || 1,
-          limit: params.limit || 10,
-          category: params.category,
-          published: params.published
+          limit: params.limit || 10
         }
       });
       return data;

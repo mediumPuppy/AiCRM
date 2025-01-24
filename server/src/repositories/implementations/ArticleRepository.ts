@@ -8,29 +8,22 @@ export class ArticleRepository implements IArticleRepository {
 
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async findAll({ page, limit, category, published, companyId }: {
+  async findAll({ page, limit, search, status }: {
     page: number;
     limit: number;
-    category?: string;
-    published?: boolean;
-    companyId?: number;
+    search?: string;
+    status?: 'draft' | 'published' | 'archived';
   }): Promise<{ articles: Article[]; total: number }> {
     let query = this.supabase
       .from(this.tableName)
       .select('*', { count: 'exact' });
 
-    if (category) {
-      query = query.eq('category', category);
+    if (search) {
+      query = query.textSearch('search_vector', search);
     }
 
-    if (typeof published === 'boolean') {
-      query = published 
-        ? query.not('published_at', 'is', null)
-        : query.is('published_at', null);
-    }
-
-    if (companyId) {
-      query = query.eq('company_id', companyId);
+    if (status) {
+      query = query.eq('status', status);
     }
 
     const start = (page - 1) * limit;
@@ -43,7 +36,7 @@ export class ArticleRepository implements IArticleRepository {
     if (error) throw error;
 
     return {
-      articles: articles.map(article => new ArticleEntity(article)),
+      articles: articles.map(article => new ArticleEntity(article) as Article),
       total: count || 0
     };
   }
@@ -56,7 +49,7 @@ export class ArticleRepository implements IArticleRepository {
       .single();
 
     if (error) throw error;
-    return article ? new ArticleEntity(article) : null;
+    return article ? (new ArticleEntity(article) as Article) : null;
   }
 
   async findBySlug(companyId: number, slug: string): Promise<Article | null> {
@@ -68,7 +61,7 @@ export class ArticleRepository implements IArticleRepository {
       .single();
 
     if (error) throw error;
-    return article ? new ArticleEntity(article) : null;
+    return article ? (new ArticleEntity(article) as Article) : null;
   }
 
   async findByCompanyId(companyId: number): Promise<Article[]> {
@@ -78,7 +71,7 @@ export class ArticleRepository implements IArticleRepository {
       .eq('company_id', companyId);
 
     if (error) throw error;
-    return articles.map(article => new ArticleEntity(article));
+    return articles.map(article => new ArticleEntity(article) as Article);
   }
 
   async findByStatus(companyId: number, status: ArticleStatus): Promise<Article[]> {
@@ -89,7 +82,7 @@ export class ArticleRepository implements IArticleRepository {
       .eq('status', status);
 
     if (error) throw error;
-    return articles.map(article => new ArticleEntity(article));
+    return articles.map(article => new ArticleEntity(article) as Article);
   }
 
   async findByAuthor(authorId: number): Promise<Article[]> {
@@ -99,7 +92,7 @@ export class ArticleRepository implements IArticleRepository {
       .eq('author_id', authorId);
 
     if (error) throw error;
-    return articles.map(article => new ArticleEntity(article));
+    return articles.map(article => new ArticleEntity(article) as Article);
   }
 
   async search(query: string): Promise<Article[]> {
@@ -107,10 +100,10 @@ export class ArticleRepository implements IArticleRepository {
       .from(this.tableName)
       .select()
       .textSearch('search_vector', query)
-      .eq('published', true);
+      .eq('status', 'published');
 
     if (error) throw error;
-    return articles.map(article => new ArticleEntity(article));
+    return articles.map(article => new ArticleEntity(article) as Article);
   }
 
   async create(data: CreateArticleDTO): Promise<Article> {
@@ -128,14 +121,17 @@ export class ArticleRepository implements IArticleRepository {
     const { data: article, error } = await this.supabase
       .from(this.tableName)
       .update({ 
-        ...data, 
-        revision: this.supabase.rpc('increment', { value: 1 })
+        ...data,
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to update article:', error);
+      throw error;
+    }
     return new ArticleEntity(article);
   }
 
@@ -144,13 +140,17 @@ export class ArticleRepository implements IArticleRepository {
       .from(this.tableName)
       .update({ 
         status: 'published',
-        published_at: new Date().toISOString()
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to publish article:', error);
+      throw error;
+    }
     return new ArticleEntity(article);
   }
 

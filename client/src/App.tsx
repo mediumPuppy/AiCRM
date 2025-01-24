@@ -5,6 +5,7 @@ import { DashboardLayout } from './components/layouts/DashboardLayout'
 import Tickets from './components/pages/Tickets'
 import Contacts from './components/pages/Contacts'
 import ChatSessions from './components/pages/ChatSessions'
+import Articles from './components/pages/Articles'
 import { ModalProvider } from './components/providers/modal-provider'
 import { CustomerLayout } from './components/layouts/CustomerLayout'
 import CustomerChatSessions from './components/customer/pages/CustomerChatSessions'
@@ -81,7 +82,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              {/* Add other dashboard routes as they're created */}
+              <Route 
+                path="/articles" 
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <Articles />
+                  </ProtectedRoute>
+                } 
+              />
             </Route>
 
             {/* Protected customer portal routes */}
