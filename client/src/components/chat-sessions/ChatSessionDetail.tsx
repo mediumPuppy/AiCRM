@@ -84,49 +84,51 @@ export function ChatSessionDetail({
         {/* Messages and Input Area */}
         <div className={`flex-1 min-w-0 flex flex-col ${showDetails ? 'hidden lg:flex' : 'flex'}`}>
           {/* Conversation area */}
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 overflow-y-auto">
             {isLoadingMessages ? (
               <div className="text-center py-8 text-gray-500">Loading messages...</div>
             ) : messages?.length === 0 ? (
               <div className="text-center py-8 text-gray-500">No messages in this session</div>
             ) : (
-              <div className="space-y-6">
-                {messages?.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-4 ${
-                      message.sender_type === 'agent' ? 'flex-row-reverse' : 'flex-row'
-                    }`}
-                  >
-                    <Avatar className="flex-shrink-0 w-10 h-10">
-                      <AvatarFallback>
-                        {message.sender_type === 'agent' ? 'A' : 'C'}
-                      </AvatarFallback>
-                    </Avatar>
-                    
+              <div className="h-full overflow-y-auto flex flex-col-reverse p-4">
+                <div className="space-y-6">
+                  {messages?.map((message) => (
                     <div
-                      className={`flex-1 rounded-lg p-4 border ${
-                        message.sender_type === 'agent'
-                          ? 'bg-white'
-                          : 'bg-gray-50'
-                      } ${
-                        message.sender_type === 'agent'
-                          ? 'ml-16'
-                          : 'mr-16'
+                      key={message.id}
+                      className={`flex gap-4 ${
+                        message.sender_type === 'agent' ? 'flex-row-reverse' : 'flex-row'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">
-                          {message.sender_type === 'agent' ? 'Agent' : 'Customer'}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {format(new Date(message.created_at), 'HH:mm')}
-                        </span>
+                      <Avatar className="flex-shrink-0 w-10 h-10">
+                        <AvatarFallback>
+                          {message.sender_type === 'agent' ? 'A' : 'C'}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div
+                        className={`flex-1 rounded-lg p-4 border ${
+                          message.sender_type === 'agent'
+                            ? 'bg-white'
+                            : 'bg-gray-50'
+                        } ${
+                          message.sender_type === 'agent'
+                            ? 'ml-16'
+                            : 'mr-16'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">
+                            {message.sender_type === 'agent' ? 'Agent' : 'Customer'}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {format(new Date(message.created_at), 'HH:mm')}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap">{message.message}</p>
                       </div>
-                      <p className="whitespace-pre-wrap">{message.message}</p>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

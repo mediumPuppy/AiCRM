@@ -53,29 +53,16 @@ export default function CustomerProfile() {
         <form className="bg-white rounded-lg shadow p-6" onSubmit={handleSubmit}>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-medium">Personal Information</h2>
-            <div className="space-x-2">
-              {isEditing && (
-                <Button type="submit" variant="default">
-                  Save Changes
+            <div>
+              {!isEditing && (
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit
                 </Button>
               )}
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (isEditing) {
-                    // Reset form data
-                    setFormData({
-                      full_name: profile?.full_name || '',
-                      email: profile?.email || '',
-                      phone: profile?.phone || ''
-                    })
-                  }
-                  setIsEditing(!isEditing)
-                }}
-              >
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
             </div>
           </div>
 
@@ -109,6 +96,28 @@ export default function CustomerProfile() {
                 disabled={!isEditing}
               />
             </div>
+            
+            {isEditing && (
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData({
+                      full_name: profile?.full_name || '',
+                      email: profile?.email || '',
+                      phone: profile?.phone || ''
+                    });
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="default">
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </div>
         </form>
 
