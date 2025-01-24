@@ -32,10 +32,7 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
   ]
 
   // Convert the dateRange to the format expected by DateRangePicker
-  const dateRange: DateRange | undefined = filters.dateRange ? {
-    from: filters.dateRange[0] || undefined,
-    to: filters.dateRange[1] || undefined
-  } : undefined
+  const dateRange: DateRange | undefined = filters.dateRange || undefined;
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
@@ -121,7 +118,7 @@ export function TicketsFilters({ filters, onFiltersChange }: TicketsFiltersProps
             value={dateRange}
             onChange={(range) => onFiltersChange({ 
               ...filters, 
-              dateRange: range ? [range.from || null, range.to || null] : undefined 
+              dateRange: range || undefined 
             })}
             placeholder="Date range"
           />

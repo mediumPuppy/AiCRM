@@ -98,6 +98,8 @@ const clientLogin: RequestHandler = async (req, res): Promise<void> => {
       return;
     }
 
+
+
     // Verify password
     if (!contact.portal_password) {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -108,7 +110,12 @@ const clientLogin: RequestHandler = async (req, res): Promise<void> => {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
-
+    
+    // Check if contact is archived
+    if (contact.status === 'archived') {
+        res.status(403).json({ error: 'Your account has been archived. Please contact support.' });
+        return;
+      }
     // Generate JWT
     const token = jwt.sign(
       {

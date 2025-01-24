@@ -132,22 +132,17 @@ export const chatsApi = {
   },
 
   startCustomerSession: async (contactId: number, companyId: number): Promise<ChatSession> => {
-    try {
-      const { data } = await axios.post(`/api/chat/sessions/customer/${contactId}/sessions`, {
-        company_id: companyId
-      })
-      return data
-    } catch (error) {
-      console.error('Failed to start customer chat session:', error)
-      throw error
-    }
+    const { data } = await axios.post(`/api/chat/sessions/customer/${contactId}/sessions`, {
+      company_id: companyId
+    })
+    return data
   },
 
   sendCustomerMessage: async (
     sessionId: number, 
     message: string,
-    contactId: number = 1,  // TODO: Get from auth context
-    companyId: number = 1   // TODO: Get from auth context
+    contactId: number,
+    companyId: number
   ): Promise<ChatMessage> => {
     try {
       const { data } = await axios.post(
@@ -169,8 +164,8 @@ export const chatsApi = {
   sendAgentMessage: async (
     sessionId: number,
     message: string,
-    agentId: number = 1,  // TODO: Get from auth context
-    companyId: number = 1  // TODO: Get from auth context
+    agentId: number,
+    companyId: number
   ): Promise<ChatMessage> => {
     try {
       const { data } = await axios.post(
@@ -186,5 +181,22 @@ export const chatsApi = {
       console.error('Failed to send agent message:', error)
       throw error
     }
+  },
+
+  startAgentSession: async (companyId: number, contactId: number, agentId: number): Promise<ChatSession> => {
+    const { data } = await axios.post('/api/chat/sessions', {
+      company_id: companyId,
+      contact_id: contactId,
+      agent_id: agentId,
+      status: 'active'
+    })
+    return data
+  },
+
+  startBotSession: async (companyId: number): Promise<ChatSession> => {
+    const { data } = await axios.post('/api/chat/sessions/bot', {
+      company_id: companyId
+    })
+    return data
   }
 }; 

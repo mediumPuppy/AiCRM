@@ -64,7 +64,10 @@ const getSession: RequestHandler = async (req, res) => {
  */
 const getCompanySessions: RequestHandler = async (req, res) => {
   try {
-    const sessions = await chatRepo.findSessionsByCompanyId(Number(req.params.companyId))
+    const sessions = await chatRepo.findSessionsByCompanyId(
+      Number(req.params.companyId),
+      req.query
+    )
     res.json({
       sessions,
       total: sessions.length
@@ -169,7 +172,7 @@ const getSessionMessages: RequestHandler = async (req, res) => {
 
 const getCustomerSessions: RequestHandler = async (req, res) => {
   try {
-    const sessions = await chatRepo.findSessionsByContact(Number(req.params.contactId))
+    const sessions = await chatRepo.findSessionsByContactId(Number(req.params.contactId))
     res.json({
       sessions,
       total: sessions.length

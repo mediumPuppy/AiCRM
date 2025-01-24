@@ -4,27 +4,23 @@ import { CustomerChatSessionsTable } from '../CustomerChatSessionsTable'
 import { useToast } from '@/hooks/use-toast'
 import CustomerChatSessionDetail from './CustomerChatSessionDetail'
 import { TablePageHeader } from '@/components/ui/table-page-header'
-
-// Hardcoded mock user for development
-const mockUser = {
-  contact_id: 1,  // Using ID from seed data
-  company_id: 1   // Using Acme Corp ID from seed data
-}
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function CustomerChatSessions() {
+  const { contact } = useAuth()
   const { toast } = useToast()
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null)
 
-  // // Ensure we have the required IDs
-  // if (!user?.contact_id || !user?.company_id) {
-  //   return (
-  //     <div className="p-6">
-  //       <div className="bg-white rounded-lg shadow p-4">
-  //         Error: Missing required user information
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  // Ensure we have the required IDs
+  if (!contact?.id || !contact?.company_id) {
+    return (
+      <div className="p-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          Error: Missing required contact information
+        </div>
+      </div>
+    )
+  }
 
   const {
     sessions,
@@ -33,15 +29,16 @@ export default function CustomerChatSessions() {
     setPagination,
     startNewSession,
     refreshSessions
-  } = useCustomerChatSessions(mockUser.contact_id, mockUser.company_id)
+  } = useCustomerChatSessions(contact.id, contact.company_id)
 
   const handleStartNewSession = async () => {
     try {
-      await startNewSession()
+      const newSession = await startNewSession()
       toast({
         title: 'Success',
         description: 'New chat session started successfully',
       })
+      setSelectedSessionId(newSession.id)
     } catch (error) {
       // Error is already handled in the hook
     }

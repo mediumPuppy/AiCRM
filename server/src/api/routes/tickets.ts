@@ -29,10 +29,25 @@ const getTickets: RequestHandler = async (req, res) => {
       companyId,
       status,
       priority,
+      assignedTo,
+      dateRange,
       search,
+      tags,
       page = 1,
       limit = 10
     } = req.query;
+
+    
+    // Parse the dateRange if it exists
+    let parsedDateRange;
+    if (dateRange && typeof dateRange === 'string') {
+      const range = JSON.parse(dateRange);
+      parsedDateRange = {
+        from: range.from ? new Date(range.from) : null,
+        to: range.to ? new Date(range.to) : null
+      };
+    }
+    
 
     if (!companyId) {
       res.status(400).json({ error: 'Company ID is required' });
@@ -43,7 +58,10 @@ const getTickets: RequestHandler = async (req, res) => {
       company_id: Number(companyId),
       status: status ? (Array.isArray(status) ? status.map(String) : [String(status)]) : undefined,
       priority: priority ? (Array.isArray(priority) ? priority.map(String) : [String(priority)]) : undefined,
+      assignedTo: assignedTo ? (Array.isArray(assignedTo) ? assignedTo.map(String) : [String(assignedTo)]) : undefined,
+      dateRange: parsedDateRange,
       search: search as string,
+      tags: tags ? (Array.isArray(tags) ? tags.map(String) : [String(tags)]) : undefined,
       page: Number(page),
       limit: Number(limit)
     };

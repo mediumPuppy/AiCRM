@@ -24,20 +24,13 @@ export const ClientSignup: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('1. Attempting client signup...');
       const { data } = await axios.post<AuthResponse>('/api/client/signup', formData);
-      console.log('2. Signup response:', { 
-        token: data.token ? '[PRESENT]' : '[MISSING]', 
-        contact: data.contact 
-      });
+
       
       login(data.token, data.contact!);
-      console.log('3. Auth context updated');
-      console.log('4. Navigating to: /customer/chat/sessions');
       
       navigate('/customer/chat/sessions', { replace: true });
     } catch (err: any) {
-      console.error('Signup error:', err);
       setError(err.response?.data?.error || 'Signup failed');
     } finally {
       setLoading(false);

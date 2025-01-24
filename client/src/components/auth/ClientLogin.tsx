@@ -23,22 +23,14 @@ export const ClientLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('1. Attempting client login...');
       const { data } = await axios.post<AuthResponse>('/api/client/login', credentials);
-      console.log('2. Login response:', { 
-        token: data.token ? '[PRESENT]' : '[MISSING]', 
-        contact: data.contact 
-      });
-      
+    
       login(data.token, data.contact!);
-      console.log('3. Auth context updated');
       
       const from = (location.state as any)?.from?.pathname || '/customer/chat/sessions';
-      console.log('4. Navigating to:', from);
       
       navigate(from, { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);

@@ -4,10 +4,12 @@ import { ContactsFilters } from '../contacts/ContactsFilters'
 import { useContacts } from '@/hooks/useContacts'
 import { ContactDetail } from '../contacts/ContactDetail'
 import { TablePageHeader } from '../ui/table-page-header'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Contacts() {
-  // TODO: Replace with actual company ID from auth/context
-  const tempCompanyId = 1
+  const { user, contact } = useAuth()
+  const companyId = user?.company_id || contact?.company_id
+  if (!companyId) throw new Error('No company ID found in auth context')
 
   const {
     contacts,
@@ -17,7 +19,7 @@ export default function Contacts() {
     pagination,
     setPagination,
     refreshContacts,
-  } = useContacts(tempCompanyId)
+  } = useContacts(companyId)
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null)
 
   return (

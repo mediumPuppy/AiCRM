@@ -31,7 +31,6 @@ export class UserRepository implements IUserRepository {
       throw selectError;
     }
 
-    console.log('D. User fetched:', { id: user.id, email: user.email });
     return new UserEntity(user);
   }
 

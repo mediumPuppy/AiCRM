@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { ticketsApi } from '@/api/tickets'
 import { useQuery } from '@tanstack/react-query'
+import { DateRange } from "react-day-picker"
 
 export interface TicketFilters {
   status?: string[]
   priority?: string[]
   assignedTo?: string[]
-  dateRange?: [Date | null, Date | null]
+  dateRange?: DateRange
   search?: string
   tags?: string[]
 }

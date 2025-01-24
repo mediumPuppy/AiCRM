@@ -46,22 +46,20 @@ export const ticketsApi = {
 
   getFiltered: async (params: TicketFilters & { page: number; limit: number; companyId: number }) => {
     try {
+      
+      // Create a new params object with serialized dateRange
+      const apiParams = {
+        ...params,
+        dateRange: params.dateRange ? JSON.stringify(params.dateRange) : undefined,
+        companyId: params.companyId
+      };
+      
       const { data } = await axios.get<{
         tickets: Ticket[]
         total: number
-      }>('/api/tickets', { 
-        params: {
-          ...params,
-          companyId: params.companyId // Ensure companyId is included
-        }
-      })
+      }>('/api/tickets', { params: apiParams })
       return data
     } catch (error: any) {
-      console.error('Failed to fetch filtered tickets:', {
-        params,
-        error: error.response?.data || error,
-        status: error.response?.status
-      })
       throw error
     }
   },

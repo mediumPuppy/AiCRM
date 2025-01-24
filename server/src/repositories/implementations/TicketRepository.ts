@@ -105,7 +105,7 @@ export class TicketRepository implements ITicketRepository {
     status?: string[],
     priority?: string[],
     assignedTo?: string[],
-    dateRange?: [Date, Date],
+    dateRange?: { from?: Date | null, to?: Date | null },
     search?: string,
     tags?: string[],
     page: number,
@@ -130,9 +130,21 @@ export class TicketRepository implements ITicketRepository {
       }
 
       if (params.dateRange) {
-        query = query
-          .gte('created_at', params.dateRange[0].toISOString())
-          .lte('created_at', params.dateRange[1].toISOString());
+        const { from, to } = params.dateRange;
+        
+        // Only apply start date filter if it exists
+        if (from) {
+          const startOfDay = new Date(from);
+          startOfDay.setHours(0, 0, 0, 0);
+          query = query.gte('created_at', startOfDay.toISOString());
+        }
+        
+        // Only apply end date filter if it exists
+        if (to) {
+          const endOfDay = new Date(to);
+          endOfDay.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endOfDay.toISOString());
+        }
       }
 
       if (params.tags?.length) {

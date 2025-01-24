@@ -47,11 +47,31 @@ export class ChatRepository implements IChatRepository {
     return session ? new ChatSessionEntity(session) : null;
   }
 
-  async findSessionsByCompanyId(companyId: number): Promise<ChatSession[]> {
-    const { data: sessions, error } = await this.supabase
+  async findSessionsByCompanyId(companyId: number, filters?: any): Promise<ChatSession[]> {
+    let query = this.supabase
       .from(this.sessionsTable)
       .select()
       .eq('company_id', companyId);
+
+    // Apply status filter
+    if (filters?.status?.length === 1) {
+      query = query.eq('status', filters.status[0]);
+    }
+
+    // Apply search filter
+    if (filters?.search) {
+      query = query.or(`contact.full_name.ilike.%${filters.search}%,contact.email.ilike.%${filters.search}%`);
+    }
+
+    // Apply date range filter
+    if (filters?.dateRange?.from) {
+      query = query.gte('created_at', filters.dateRange.from);
+    }
+    if (filters?.dateRange?.to) {
+      query = query.lte('created_at', filters.dateRange.to);
+    }
+
+    const { data: sessions, error } = await query;
 
     if (error) throw error;
     return sessions.map(session => new ChatSessionEntity(session));

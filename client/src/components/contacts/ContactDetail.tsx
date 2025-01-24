@@ -12,6 +12,17 @@ import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
 import { TicketDetail } from '../tickets/TicketDetail';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,6 +40,7 @@ type ContactStatus = 'active' | 'archived';
 
 export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDetailProps) {
   const [selectedTab, setSelectedTab] = useState('details');
+  const [pendingStatus, setPendingStatus] = useState<ContactStatus | null>(null);
   const { 
     data: contact, 
     isLoading, 
@@ -44,6 +56,7 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
     try {
       await updateContact(contactId, { status: newStatus });
       onContactUpdate?.();
+      setPendingStatus(null);
     } catch (error) {
       console.error('Failed to update contact status:', error);
     }
@@ -177,11 +190,14 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
           <div className="bg-gray-50 rounded-lg p-4 space-y-4">
             <div>
               <label className="text-sm text-gray-500">Status</label>
-              <Select value={contact.status} onValueChange={(value) => handleStatusChange(value as ContactStatus)}>
+              <Select 
+                value={contact.status} 
+                onValueChange={(value: ContactStatus) => setPendingStatus(value)}
+              >
                 <SelectTrigger className="mt-1 w-36">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" side="bottom" align="start" className="w-36">
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
@@ -209,6 +225,51 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
             )}
           </div>
         </div>
+
+        {/* Mobile/Tablet Status Section */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-gray-500">Status</label>
+            <Select 
+              value={contact.status} 
+              onValueChange={(value: ContactStatus) => setPendingStatus(value)}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper" side="top" align="end" className="w-36">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Status Change Confirmation Dialog */}
+        <AlertDialog open={!!pendingStatus} onOpenChange={() => setPendingStatus(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {pendingStatus === 'archived' ? 'Archive Contact' : 'Activate Contact'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {pendingStatus === 'archived' 
+                  ? 'Are you sure you want to archive this contact? This action can be reversed later.'
+                  : 'Are you sure you want to activate this contact? This will make them visible in the main contacts list.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setPendingStatus(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => pendingStatus && handleStatusChange(pendingStatus)}
+              >
+                {pendingStatus === 'archived' ? 'Archive' : 'Activate'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

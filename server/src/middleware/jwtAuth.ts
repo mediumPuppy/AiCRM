@@ -3,11 +3,12 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export const jwtAuthMiddleware: RequestHandler = (req: any, res, next) => {
+export const jwtAuthMiddleware: RequestHandler = (req: any, res, next): void => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      res.status(401).json({ error: 'No token provided' });
+      return;
     }
 
     const token = authHeader.split(' ')[1];
@@ -19,16 +20,19 @@ export const jwtAuthMiddleware: RequestHandler = (req: any, res, next) => {
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({ error: 'Invalid token' });
+      res.status(401).json({ error: 'Invalid token' });
+      return;
     }
     res.status(500).json({ error: 'Authentication failed' });
+    return;
   }
 };
 
 // Optional: Middleware to check if user is admin
-export const requireAdmin: RequestHandler = (req: any, res, next) => {
+export const requireAdmin: RequestHandler = (req: any, res, next): void => {
   if (req.user?.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin access required' });
+    res.status(403).json({ error: 'Admin access required' });
+    return;
   }
   next();
 }; 

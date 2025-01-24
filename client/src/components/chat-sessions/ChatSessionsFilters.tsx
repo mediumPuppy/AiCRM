@@ -1,74 +1,71 @@
-import { useState } from 'react'
-import { DateRangePicker } from '../ui/date-range-picker'
+import { useState, useEffect } from 'react'
+import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { Badge } from '../ui/badge'
+import { useDebounce } from '@/hooks/useDebounce'
 import type { ChatSessionFilters, ChatSessionStatus } from '@/types/chat.types'
+import { DateRangePicker } from '../ui/date-range-picker'
 
 interface ChatSessionsFiltersProps {
   filters: ChatSessionFilters
   onFiltersChange: (filters: ChatSessionFilters) => void
 }
 
-const STATUS_OPTIONS: ChatSessionStatus[] = ['active', 'closed', 'archived']
-
 export function ChatSessionsFilters({
   filters,
   onFiltersChange,
 }: ChatSessionsFiltersProps) {
-  const [searchDebounceTimeout, setSearchDebounceTimeout] = useState<NodeJS.Timeout>()
+  const [searchTerm, setSearchTerm] = useState(filters.search || '')
+  const debouncedSearch = useDebounce(searchTerm)
 
-  const handleSearchChange = (search: string) => {
-    // Clear existing timeout
-    if (searchDebounceTimeout) {
-      clearTimeout(searchDebounceTimeout)
-    }
+  // Update filters when debounced search changes
+  useEffect(() => {
+    onFiltersChange({ ...filters, search: debouncedSearch || undefined })
+  }, [debouncedSearch])
 
-    // Set new timeout
-    const timeout = setTimeout(() => {
-      onFiltersChange({ ...filters, search })
-    }, 500)
-
-    setSearchDebounceTimeout(timeout)
-  }
-
-  const toggleStatus = (status: ChatSessionStatus) => {
-    const currentStatuses = filters.status || []
-    const newStatuses = currentStatuses.includes(status)
-      ? currentStatuses.filter(s => s !== status)
-      : [...currentStatuses, status]
-    
+  const handleStatusChange = (status: ChatSessionStatus | undefined) => {
     onFiltersChange({
       ...filters,
-      status: newStatuses.length > 0 ? newStatuses : undefined
+      status: status ? [status] : []
     })
   }
 
   return (
     <div className="space-y-4">
-      {/* Search Input */}
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search chat sessions..."
-            defaultValue={filters.search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      {/* Status Filters */}
-      <div className="flex flex-wrap gap-2">
-        {STATUS_OPTIONS.map((status) => (
-          <Badge
-            key={status}
-            variant={filters.status?.includes(status) ? 'default' : 'outline'}
-            className="cursor-pointer"
-            onClick={() => toggleStatus(status)}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Input
+          type="search"
+          placeholder="Search chat sessions..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full sm:max-w-sm"
+        />
+        
+        <div className="flex justify-between sm:justify-start gap-2">
+          <Button
+            variant={!filters.status?.length ? 'default' : 'outline'}
+            onClick={() => handleStatusChange(undefined)}
           >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge>
-        ))}
+            All
+          </Button>
+          <Button
+            variant={filters.status?.includes('active') ? 'default' : 'outline'}
+            onClick={() => handleStatusChange('active')}
+          >
+            Active
+          </Button>
+          <Button
+            variant={filters.status?.includes('closed') ? 'default' : 'outline'}
+            onClick={() => handleStatusChange('closed')}
+          >
+            Closed
+          </Button>
+          <Button
+            variant={filters.status?.includes('archived') ? 'default' : 'outline'}
+            onClick={() => handleStatusChange('archived')}
+          >
+            Archived
+          </Button>
+        </div>
       </div>
 
       {/* Date Range Filter */}
@@ -76,7 +73,7 @@ export function ChatSessionsFilters({
         <DateRangePicker
           value={filters.dateRange || undefined}
           onChange={(dateRange) =>
-            onFiltersChange({ ...filters, dateRange })
+            onFiltersChange({ ...filters, dateRange: dateRange || undefined })
           }
         />
       </div>
