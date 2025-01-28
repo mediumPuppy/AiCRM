@@ -127,7 +127,7 @@ export function ChatSessionDetail({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">
-                            {message.sender_type === 'agent' ? 'Agent' : 'Customer'}
+                            {message.sender_type === 'agent' ? (user?.full_name || 'Agent') : session.contact?.full_name || 'Customer'}
                           </span>
                           <span className="text-sm text-gray-500">
                             {format(new Date(message.created_at), 'HH:mm')}
