@@ -214,7 +214,7 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
                     p: ({ children }) => (
                       <p className="mb-4 last:mb-0">
                         {Array.isArray(children) 
-                          ? children.map((child, i) => 
+                          ? children.map((child) => 
                               typeof child === 'string' 
                                 ? child.split('\n').map((line, j, arr) => (
                                     <span key={j}>

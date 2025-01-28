@@ -1,11 +1,11 @@
 import request from 'supertest'
 import express from 'express'
 import aiRoutes from './ai'
-import { generateOutreachMessage } from '../../services/llm'
+import { generateChatMessage } from '../../services/llm'
 
 // Mock the LLM service
 jest.mock('../../services/llm')
-const mockGenerateOutreachMessage = generateOutreachMessage as jest.MockedFunction<typeof generateOutreachMessage>
+const mockGenerateChatMessage = generateChatMessage as jest.MockedFunction<typeof generateChatMessage>
 
 // Mock Supabase client
 jest.mock('../../lib/supabase', () => ({
@@ -35,13 +35,13 @@ describe('AI Routes', () => {
     app = express()
     app.use(express.json())
     app.use('/api/ai', aiRoutes)
-    mockGenerateOutreachMessage.mockClear()
+    mockGenerateChatMessage.mockClear()
   })
 
   describe('POST /api/ai/outreach-gpt', () => {
     it('should generate outreach message and track metrics successfully', async () => {
       const mockDraft = 'Hello John, this is a test message.'
-      mockGenerateOutreachMessage.mockResolvedValueOnce(mockDraft)
+      mockGenerateChatMessage.mockResolvedValueOnce(mockDraft)
 
       const response = await request(app)
         .post('/api/ai/outreach-gpt')
@@ -75,7 +75,7 @@ describe('AI Routes', () => {
 
     it('should use default values for metrics if not provided', async () => {
       const mockDraft = 'Hello John, this is a test message.'
-      mockGenerateOutreachMessage.mockResolvedValueOnce(mockDraft)
+      mockGenerateChatMessage.mockResolvedValueOnce(mockDraft)
 
       const response = await request(app)
         .post('/api/ai/outreach-gpt')
