@@ -12,6 +12,8 @@ import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
 import { TicketDetail } from '../tickets/TicketDetail';
 import { OutreachModal } from './OutreachModal';
+import { ChatSessionsTable } from '../chat-sessions/ChatSessionsTable';
+import { useContactChatSessions } from '@/hooks/useContactChatSessions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +53,9 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
   const { updateContact } = useUpdateContact();
   const { tickets, isLoading: isLoadingTickets } = useContactTickets(contactId);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [chatSessionPagination, setChatSessionPagination] = useState({ page: 1, limit: 5 });
+  const [selectedChatSessionId, setSelectedChatSessionId] = useState<number | null>(null);
+  const { data: chatSessions, isLoading: isLoadingChatSessions } = useContactChatSessions(contactId, chatSessionPagination);
 
   const handleStatusChange = async (newStatus: ContactStatus) => {
     if (!contact) return;
@@ -179,6 +184,18 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
                       selectedTicketId={selectedTicketId}
                     />
                     
+                    <div className="mt-8">
+                      <h3 className="text-lg font-medium mb-4">Chat Sessions</h3>
+                      <ChatSessionsTable
+                        sessions={chatSessions || { sessions: [], total: 0 }}
+                        isLoading={isLoadingChatSessions}
+                        pagination={chatSessionPagination}
+                        onPaginationChange={setChatSessionPagination}
+                        onSessionSelect={setSelectedChatSessionId}
+                        selectedSessionId={selectedChatSessionId}
+                      />
+                    </div>
+
                     {/* Ticket Detail Modal */}
                     {selectedTicketId && (
                       <div className="fixed inset-0 z-50 bg-white overflow-auto">

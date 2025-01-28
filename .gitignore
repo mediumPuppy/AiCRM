@@ -27,3 +27,6 @@ dist-ssr
 cursor*.md
 
 vite-env.d.ts
+
+myscripts/
+combined_files.txt
