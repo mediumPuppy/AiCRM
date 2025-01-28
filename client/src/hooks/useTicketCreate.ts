@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useContacts } from './useContacts'
 import { useDebounce } from './useDebounce'
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ticketsApi, Ticket } from '@/api/tickets'
 import { Contact } from '@/types/contact.types'
 
