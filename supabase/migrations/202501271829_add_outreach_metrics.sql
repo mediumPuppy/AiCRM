@@ -13,17 +13,9 @@ CREATE TABLE IF NOT EXISTS outreach_metrics (
 -- Add indexes if they don't exist
 CREATE INDEX IF NOT EXISTS outreach_metrics_contact_id_idx ON outreach_metrics(contact_id);
 CREATE INDEX IF NOT EXISTS outreach_metrics_created_at_idx ON outreach_metrics(created_at);
--- create set timestamp function
-CREATE OR REPLACE FUNCTION trigger_set_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = CURRENT_TIMESTAMP;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
--- Drop trigger if exists and recreate
-DROP TRIGGER IF EXISTS set_outreach_metrics_updated_at ON outreach_metrics;
+
+-- Create trigger to update timestamp
 CREATE TRIGGER set_outreach_metrics_updated_at
   BEFORE UPDATE ON outreach_metrics
   FOR EACH ROW
-  EXECUTE FUNCTION trigger_set_timestamp(); 
+  EXECUTE FUNCTION update_timestamp(); 
