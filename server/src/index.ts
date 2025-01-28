@@ -27,6 +27,7 @@ import webhookRoutes from './api/routes/webhooks'
 import authRoutes from './api/routes/auth'
 import clientAuthRoutes from './api/routes/clientAuth'
 import activityRoutes from './api/routes/activity'
+import aiRoutes from './api/routes/ai'
 
 const app = express()
 app.use(express.json())
@@ -35,6 +36,7 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, '../../client/dist')))
 
 // API Routes
+app.use('/api/ai', aiRoutes)
 app.use('/api/api-keys', apiKeysRouter)
 app.use('/api/articles', articleRoutes)
 app.use('/api/attachments', attachmentRoutes)

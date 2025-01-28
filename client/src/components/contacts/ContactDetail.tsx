@@ -6,11 +6,12 @@ import { formatDate } from '../../utils/formatDate';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useUpdateContact } from '@/hooks/useUpdateContact';
 import { ContactNotes } from './ContactNotes';
-import { IconX } from '@tabler/icons-react';
+import { IconX, IconMessagePlus } from '@tabler/icons-react';
 import { useContactTickets } from '@/hooks/useContactTickets';
 import { useNotes } from '@/hooks/useNotes';
 import { TicketsTable } from '../tickets/TicketsTable';
 import { TicketDetail } from '../tickets/TicketDetail';
+import { OutreachModal } from './OutreachModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ type ContactStatus = 'active' | 'archived';
 export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDetailProps) {
   const [selectedTab, setSelectedTab] = useState<'details' | 'tickets' | 'notes'>('details');
   const [pendingStatus, setPendingStatus] = useState<ContactStatus | null>(null);
+  const [showOutreachModal, setShowOutreachModal] = useState(false);
   const { 
     data: contact, 
     isLoading, 
@@ -87,9 +89,20 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
             {contact.status}
           </Badge>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
-          <IconX className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowOutreachModal(true)}
+            className="flex items-center gap-1"
+          >
+            <IconMessagePlus className="h-4 w-4" />
+            Generate Message
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
+            <IconX className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -280,6 +293,16 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {/* OutreachGPT Modal */}
+      <OutreachModal
+        contactId={contactId}
+        open={showOutreachModal}
+        onClose={() => setShowOutreachModal(false)}
+        onSaveNote={async (content) => {
+          await addNote(content);
+        }}
+      />
     </div>
   );
 } 
