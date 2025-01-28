@@ -28,15 +28,18 @@ export function OutreachModal({ contactId, open, onClose, onSaveNote }: Outreach
 
   async function handleGenerate() {
     setIsLoading(true)
-    const startTime = performance.now()
 
     try {
       const response = await axios.post('/api/ai/outreach-gpt', {
         contactId,
-        instruction
+        instruction,
+        generationCount: generationCount + 1,
+        isFirstTry: generationCount === 0
       })
       setDraftMessage(response.data.draft)
       setGenerationCount(prev => prev + 1)
+
+      console.log('Generation metrics:', response.data.metrics)
     } catch (error) {
       console.error('OutreachGPT failed:', error)
       toast({

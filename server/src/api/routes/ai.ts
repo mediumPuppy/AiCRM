@@ -6,7 +6,12 @@ const router = Router()
 
 router.post('/outreach-gpt', async (req: Request, res: Response) => {
   try {
-    const { contactId, instruction } = req.body
+    const { 
+      contactId, 
+      instruction,
+      generationCount = 1,
+      isFirstTry = true
+    } = req.body
 
     if (!contactId || !instruction) {
       return res.status(400).json({ error: 'Missing required fields: contactId and instruction' })
@@ -27,16 +32,25 @@ router.post('/outreach-gpt', async (req: Request, res: Response) => {
     const startTime = performance.now()
     const draftMessage = await generateOutreachMessage(instruction, contactData)
     const endTime = performance.now()
+    const generationTime = endTime - startTime
 
     // Log metrics
     await supabase.from('outreach_metrics').insert({
       contact_id: contactId,
-      generation_time_ms: endTime - startTime,
+      generation_time_ms: generationTime,
       instruction,
+      total_generations: generationCount,
+      accepted_on_first_try: isFirstTry,
       created_at: new Date().toISOString()
     })
 
-    return res.json({ draft: draftMessage })
+    return res.json({ 
+      draft: draftMessage,
+      metrics: {
+        generationTime,
+        generationCount
+      }
+    })
   } catch (error) {
     console.error('OutreachGPT error:', error)
     return res.status(500).json({ error: 'Failed to generate outreach message' })

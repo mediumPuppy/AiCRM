@@ -39,9 +39,43 @@ describe('AI Routes', () => {
   })
 
   describe('POST /api/ai/outreach-gpt', () => {
-    it('should generate outreach message successfully', async () => {
-      const mockMessage = 'Hello John, this is a test message.'
-      mockGenerateOutreachMessage.mockResolvedValueOnce(mockMessage)
+    it('should generate outreach message and track metrics successfully', async () => {
+      const mockDraft = 'Hello John, this is a test message.'
+      mockGenerateOutreachMessage.mockResolvedValueOnce(mockDraft)
+
+      const response = await request(app)
+        .post('/api/ai/outreach-gpt')
+        .send({
+          contactId: 1,
+          instruction: 'Write a welcome message',
+          generationCount: 2,
+          isFirstTry: false
+        })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        draft: mockDraft,
+        metrics: {
+          generationTime: expect.any(Number),
+          generationCount: 2
+        }
+      })
+
+      // Verify metrics were logged
+      const mockSupabase = require('../../lib/supabase').supabase
+      expect(mockSupabase.from).toHaveBeenCalledWith('outreach_metrics')
+      expect(mockSupabase.from().insert).toHaveBeenCalledWith(expect.objectContaining({
+        contact_id: 1,
+        instruction: 'Write a welcome message',
+        total_generations: 2,
+        accepted_on_first_try: false,
+        generation_time_ms: expect.any(Number)
+      }))
+    })
+
+    it('should use default values for metrics if not provided', async () => {
+      const mockDraft = 'Hello John, this is a test message.'
+      mockGenerateOutreachMessage.mockResolvedValueOnce(mockDraft)
 
       const response = await request(app)
         .post('/api/ai/outreach-gpt')
@@ -51,8 +85,17 @@ describe('AI Routes', () => {
         })
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual({ draft: mockMessage })
-      expect(mockGenerateOutreachMessage).toHaveBeenCalledTimes(1)
+      expect(response.body.metrics).toEqual({
+        generationTime: expect.any(Number),
+        generationCount: 1
+      })
+
+      // Verify default metrics were logged
+      const mockSupabase = require('../../lib/supabase').supabase
+      expect(mockSupabase.from().insert).toHaveBeenCalledWith(expect.objectContaining({
+        total_generations: 1,
+        accepted_on_first_try: true
+      }))
     })
 
     it('should return 400 if required fields are missing', async () => {
