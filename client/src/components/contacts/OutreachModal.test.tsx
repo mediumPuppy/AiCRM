@@ -32,7 +32,7 @@ describe('OutreachModal', () => {
 
     render(<OutreachModal {...mockProps} />)
     
-    const input = screen.getByPlaceholderText(/Write a welcome email/)
+    const input = screen.getByPlaceholderText(/Write a welcome email/) as HTMLInputElement
     fireEvent.change(input, { target: { value: 'Test instruction' } })
     
     const generateButton = screen.getByText('Generate Draft')
@@ -56,7 +56,7 @@ describe('OutreachModal', () => {
     render(<OutreachModal {...mockProps} />)
     
     // Generate a message first
-    const input = screen.getByPlaceholderText(/Write a welcome email/)
+    const input = screen.getByPlaceholderText(/Write a welcome email/) as HTMLInputElement
     fireEvent.change(input, { target: { value: 'Test instruction' } })
     
     const generateButton = screen.getByText('Generate Draft')
@@ -103,6 +103,6 @@ describe('OutreachModal', () => {
     render(<OutreachModal {...mockProps} />)
     
     // Input should be empty
-    expect(input.value).toBe('')
+    expect((input as HTMLInputElement).value).toBe('')
   })
 }) 
