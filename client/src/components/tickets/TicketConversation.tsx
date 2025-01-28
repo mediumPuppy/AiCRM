@@ -1,6 +1,10 @@
 import { useTicketConversation } from '@/hooks/useTicketConversation';
+import { useTicketDetail } from '@/hooks/useTicketDetail';
+import { useContactDetail } from '@/hooks/useContactDetail';
+import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Progress } from '../ui/progress';
+import { format } from 'date-fns';
 
 interface TicketConversationProps {
   ticketId: number;
@@ -8,22 +12,16 @@ interface TicketConversationProps {
 
 export function TicketConversation({ ticketId }: TicketConversationProps) {
   const { conversation, isLoading } = useTicketConversation(ticketId);
+  const { ticket } = useTicketDetail(ticketId);
+  const { data: contact } = useContactDetail(ticket?.contact_id || 0);
+  const { user } = useAuth();
   
   // Filter and sort conversation items
   const conversationItems = conversation
     ?.filter(item => ['chat_message', 'email', 'sms'].includes(item.type))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-    });
-  };
-
-  if (isLoading) {
+  if (isLoading || !ticket) {
     return (
       <div className="flex flex-col items-center justify-center py-8 space-y-4">
         <Progress value={33} className="w-[60%]" />
@@ -51,7 +49,9 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
           >
           <Avatar className="flex-shrink-0 w-10 h-10">
               <AvatarFallback>
-              {item.sender_type[0].toUpperCase()}
+                {item.sender_type === 'agent' 
+                  ? (user?.full_name?.[0] || 'A')
+                  : (contact?.full_name?.[0] || 'C')}
               </AvatarFallback>
             </Avatar>
             
@@ -68,10 +68,12 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
             >
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">
-                {item.sender_type === 'agent' ? 'Agent' : 'Customer'} #{item.sender_id}
+                {item.sender_type === 'agent' 
+                  ? (user?.full_name || 'Agent')
+                  : (contact?.full_name || 'Customer')}
               </span>
               <span className="text-sm text-gray-500">
-                {formatDate(item.created_at)}
+                {format(new Date(item.created_at), 'HH:mm')}
               </span>
             </div>
             <p className="whitespace-pre-wrap">{item.message}</p>
