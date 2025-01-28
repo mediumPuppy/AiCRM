@@ -11,6 +11,9 @@ import { TicketActions } from './TicketActions'
 import type { Ticket } from '@/api/tickets'
 import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
+import { getAgentRecommendation, evaluateRecommendation } from '@/api/agent'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface TicketDetailProps {
   ticketId: number
@@ -26,12 +29,23 @@ type EnrichedTicket = Ticket & {
   agent?: User | null;
 }
 
+interface AxiosError {
+  response?: {
+    data: any;
+    status: number;
+    headers: any;
+  };
+}
+
 export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
   const { ticket, isLoading, updateStatus, updatePriority, addNote, assignToMe, unassign } = useTicketDetail(ticketId)
   const { conversation } = useTicketConversation(ticketId)
   const { data: contact } = useContactDetail(ticket?.contact_id ?? 0)
   const { data: assignedAgent } = useUserDetail(ticket?.assigned_to ?? 0)
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
+  const [recommendation, setRecommendation] = useState<string | null>(null)
+  const [metricId, setMetricId] = useState<number | null>(null)
+  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false)
 
   // Filter notes from conversation
   const notes = conversation?.filter(item => item.type === 'note') || []
@@ -56,6 +70,40 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
     await unassign();
     onTicketUpdate?.();
   };
+
+  const handleGetRecommendation = async () => {
+    try {
+      setIsLoadingRecommendation(true)
+      console.log('Getting recommendation for ticket:', ticketId)
+      const result = await getAgentRecommendation(ticketId)
+      console.log('Got recommendation result:', result)
+      setRecommendation(result)
+    } catch (error) {
+      console.error('Failed to get recommendation:', error)
+      if (error instanceof Error) {
+        const axiosError = error as AxiosError
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          response: axiosError.response
+        })
+      }
+    } finally {
+      setIsLoadingRecommendation(false)
+    }
+  }
+
+  const handleEvaluateRecommendation = async (success: boolean) => {
+    if (!metricId) return
+    try {
+      await evaluateRecommendation(metricId, success)
+      // Optionally clear the recommendation after evaluation
+      setRecommendation(null)
+      setMetricId(null)
+    } catch (error) {
+      console.error('Failed to evaluate recommendation:', error)
+    }
+  }
 
   if (isLoading) {
     return <div className="p-6">Loading ticket details...</div>
@@ -133,6 +181,41 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
           </div>
         </div>
       </div>
+
+      {/* Agent Recommendation Section */}
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>AI Assistant</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!recommendation ? (
+            <Button 
+              onClick={handleGetRecommendation}
+              disabled={isLoadingRecommendation}
+            >
+              {isLoadingRecommendation ? 'Getting Recommendation...' : 'Get Action Recommendation'}
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-lg">{recommendation}</p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleEvaluateRecommendation(true)}
+                >
+                  👍 This was helpful
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleEvaluateRecommendation(false)}
+                >
+                  👎 Not helpful
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 } 
