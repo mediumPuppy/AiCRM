@@ -1,7 +1,7 @@
 import { Button } from '../ui/button'
 import { IconX } from '@tabler/icons-react'
 import type { Ticket } from '@/api/tickets'
-import type { Contact } from '@/types/contact.types'
+import type { Contact } from '@/api/contacts'
 import type { User } from '@/types/user.types'
 import { Badge } from '../ui/badge'
 

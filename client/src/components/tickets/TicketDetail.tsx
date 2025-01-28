@@ -10,7 +10,7 @@ import { TicketConversation } from './TicketConversation'
 import { TicketNotes } from './TicketNotes'
 import { TicketActions } from './TicketActions'
 import type { Ticket } from '@/api/tickets'
-import type { Contact } from '@/types/contact.types'
+import type { Contact } from '@/api/contacts'
 import type { User } from '@/types/user.types'
 
 interface TicketDetailProps {
