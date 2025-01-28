@@ -78,8 +78,11 @@ const handleGetMetrics: RequestHandler = async (_req, res, next) => {
 
     // Calculate aggregate metrics
     const totalCount = metrics.length
+    const evaluatedMetrics = metrics.filter(m => m.success !== null)
     const successCount = metrics.filter(m => m.success === true).length
-    const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0
+    const successRate = evaluatedMetrics.length > 0 
+      ? (successCount / evaluatedMetrics.length) * 100 
+      : 0
     const avgLatency = totalCount > 0 
       ? metrics.reduce((sum, m) => sum + (m.latency_ms || 0), 0) / totalCount 
       : 0

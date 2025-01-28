@@ -4,15 +4,18 @@ import { getAgentMetrics } from '@/api/agent'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { IconRobot, IconCheck, IconClock, IconBrain } from '@tabler/icons-react'
+import type { AgentMetricsResponse } from '@/api/agent'
+
+type AgentMetric = AgentMetricsResponse['metrics'][0]
 
 export function AgentMetrics() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<AgentMetricsResponse, Error>({
     queryKey: ['agentMetrics'],
     queryFn: getAgentMetrics
   })
 
   if (isLoading) return <div>Loading metrics...</div>
-  if (error) return <div>Error loading metrics</div>
+  if (error) return <div>Error loading metrics: {error.message}</div>
   if (!data) return null
 
   const { metrics, aggregates } = data
@@ -88,7 +91,7 @@ export function AgentMetrics() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {metrics.slice(0, 10).map((metric) => (
+              {metrics.slice(0, 10).map((metric: AgentMetric) => (
                 <TableRow key={metric.id}>
                   <TableCell>
                     {new Date(metric.created_at).toLocaleString()}

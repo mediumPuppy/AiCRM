@@ -1,8 +1,9 @@
 import { Router, Request, Response, RequestHandler } from 'express'
-import { generateOutreachMessage } from '../../services/llm'
+import { generateChatMessage } from '../../services/llm'
 import { supabase } from '../../lib/supabase'
 
 const router = Router()
+
 
 const generateOutreachDraft: RequestHandler = async (req, res) => {
   try {
@@ -33,7 +34,7 @@ const generateOutreachDraft: RequestHandler = async (req, res) => {
 
     // Generate the message
     const startTime = performance.now()
-    const draftMessage = await generateOutreachMessage(instruction, contactData, agentName)
+    const draftMessage = await generateChatMessage(instruction, contactData, agentName)
     const endTime = performance.now()
     const generationTime = endTime - startTime
 
