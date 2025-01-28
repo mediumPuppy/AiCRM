@@ -1,7 +1,7 @@
 import { useTicketConversation } from '@/hooks/useTicketConversation';
 import { useTicketDetail } from '@/hooks/useTicketDetail';
 import { useContactDetail } from '@/hooks/useContactDetail';
-import { useUserDetail } from '@/hooks/useUserDetail';
+import { useUsersDetail } from '@/hooks/useUserDetail';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Progress } from '../ui/progress';
 import { format } from 'date-fns';
@@ -32,10 +32,12 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
     return Array.from(ids);
   }, [conversationItems]);
 
-  // Fetch all agent details at once
-  const agentQueries = agentIds.map(id => useUserDetail(id));
+  // Use the new useUsersDetail hook
+  const agentDetails = useUsersDetail(agentIds);
+
+  // Create a map of agent IDs to their data
   const agents = Object.fromEntries(
-    agentIds.map((id, index) => [id, agentQueries[index].data])
+    agentIds.map((id, index) => [id, agentDetails[index].data])
   );
 
   if (isLoading || !ticket) {

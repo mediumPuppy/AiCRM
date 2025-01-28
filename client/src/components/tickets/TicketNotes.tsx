@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
+import { Button } from '../ui/button'
+import { Avatar, AvatarFallback } from '../ui/avatar'
+import { useUsersDetail } from '@/hooks/useUserDetail'
+import { useMemo } from 'react'
 
 interface Note {
   id: number;
@@ -16,6 +19,25 @@ interface TicketNotesProps {
 
 export function TicketNotes({ notes, onAddNote }: TicketNotesProps) {
   const [newNote, setNewNote] = useState('')
+
+  // Get unique agent IDs from notes
+  const agentIds = useMemo(() => {
+    const ids = new Set<number>();
+    notes.forEach(note => {
+      if (note.sender_id) {
+        ids.add(note.sender_id);
+      }
+    });
+    return Array.from(ids);
+  }, [notes]);
+
+  // Fetch agent details
+  const agentDetails = useUsersDetail(agentIds);
+
+  // Create a map of agent IDs to their data
+  const agents = Object.fromEntries(
+    agentIds.map((id, index) => [id, agentDetails[index].data])
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,22 +77,36 @@ export function TicketNotes({ notes, onAddNote }: TicketNotesProps) {
             No notes available
           </div>
         ) : (
-          sortedNotes.map((note) => (
-            <div key={note.id} className="bg-white border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">Agent #{note.sender_id}</span>
-                <span className="text-sm text-gray-500">
-                  {new Date(note.created_at).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                  })}
-                </span>
+          sortedNotes.map((note) => {
+            const agent = agents[note.sender_id];
+            
+            return (
+              <div key={note.id} className="flex gap-4">
+                <Avatar className="flex-shrink-0 w-10 h-10">
+                  <AvatarFallback>
+                    {agent?.full_name?.[0] || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 bg-white border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium">
+                      {agent?.full_name || `Agent #${note.sender_id}`}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(note.created_at).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap">{note.message}</p>
+                </div>
               </div>
-              <p className="whitespace-pre-wrap">{note.message}</p>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
