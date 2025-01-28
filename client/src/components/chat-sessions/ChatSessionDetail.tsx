@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Button } from '../ui/button'
-import { ScrollArea } from '../ui/scroll-area'
 import { useAuth } from '@/contexts/AuthContext'
 import { useChatSessionDetail } from '@/hooks/useChatSessionDetail'
 import { useNavigate } from 'react-router-dom'
@@ -11,9 +10,7 @@ import { AvatarFallback } from '../ui/avatar'
 import { IconX, IconMessage, IconSettings } from '@tabler/icons-react'
 import type { ChatSession } from '@/types/chat.types'
 import { AgentChatInput } from './AgentChatInput'
-import { ChatMessage } from './ChatMessage'
-import { MessageInput } from './MessageInput'
-import { GenerateMessageDialog } from './GenerateMessageDialog'
+
 
 interface ChatSessionDetailProps {
   sessionId: number
@@ -40,7 +37,7 @@ export function ChatSessionDetail({
     unassign
   } = useChatSessionDetail(sessionId)
 
-  const handleCreateTicket = () => {
+  const handleCreateTicket = async () => {
     if (!session?.contact_id || !session?.company_id) return
     
     // Create a description that includes the chat history
@@ -52,20 +49,46 @@ export function ChatSessionDetail({
 
     const description = `Created from chat session #${session.id}\n\nChat History:\n${chatHistory}`
     
-    // Navigate to tickets page with create action and pre-filled data
-    const ticketData = {
-      company_id: session.company_id,
-      contact_id: session.contact_id,
-      assigned_to: user?.id,
-      subject: `Chat Session #${session.id} Follow-up`,
-      description,
-      priority: 'normal',
-      status: 'open'
+    try {
+      // First create the ticket
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          company_id: session.company_id,
+          contact_id: session.contact_id,
+          assigned_to: user?.id,
+          subject: `Chat Session #${session.id} Follow-up`,
+          description,
+          priority: 'normal',
+          status: 'open'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create ticket')
+      }
+
+      const ticket = await response.json()
+
+      // Then link the chat session to the ticket
+      await fetch(`/api/chat/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticket_id: ticket.id
+        }),
+      })
+      
+      // Navigate to tickets page with the new ticket selected
+      navigate(`/tickets?action=view&panel=detail&id=${ticket.id}`)
+    } catch (error) {
+      console.error('Failed to create ticket:', error)
     }
-    
-    navigate('/tickets?action=create&panel=new', { 
-      state: { ticketData } 
-    })
   }
 
   if (isLoading) {

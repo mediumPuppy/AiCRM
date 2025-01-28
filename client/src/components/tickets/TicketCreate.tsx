@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTicketCreate } from '@/hooks/useTicketCreate'
 import { useCreateContact } from '@/hooks/useCreateContact'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '../ui/button'
+import { Contact } from '@/api/contacts'
 
 interface TicketCreateProps {
   onClose: () => void
@@ -32,6 +33,8 @@ export function TicketCreate({ onClose, onTicketCreated, initialData }: TicketCr
   const [priority, setPriority] = useState<TicketPriority>(initialData?.priority || 'normal')
   const [contactId, setContactId] = useState<number | null>(initialData?.contact_id || null)
   const [isCreatingContact, setIsCreatingContact] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
   const [newContactData, setNewContactData] = useState({
     full_name: '',
     email: '',
@@ -44,10 +47,23 @@ export function TicketCreate({ onClose, onTicketCreated, initialData }: TicketCr
     searchTerm,
     setSearchTerm,
     createTicket,
-    isCreating
+    isCreating,
+    getContactById
   } = useTicketCreate()
 
   const createContactMutation = useCreateContact()
+
+  // Set initial contact in search field if provided
+  useEffect(() => {
+    if (initialData?.contact_id) {
+      getContactById(initialData.contact_id).then(contact => {
+        if (contact) {
+          setSearchTerm(contact.full_name)
+          setSelectedContact(contact)
+        }
+      })
+    }
+  }, [initialData?.contact_id, getContactById])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,10 +129,6 @@ export function TicketCreate({ onClose, onTicketCreated, initialData }: TicketCr
     setSelectedContact(contact)
     setShowDropdown(false)
   }
-
-  // Add new state for tracking selected contact and dropdown visibility
-  const [selectedContact, setSelectedContact] = useState<any>(null)
-  const [showDropdown, setShowDropdown] = useState(false)
 
   return (
     <div className="h-full bg-white flex flex-col">

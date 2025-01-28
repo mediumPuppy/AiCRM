@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useContacts } from './useContacts'
 import { useDebounce } from './useDebounce'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { ticketsApi, Ticket } from '@/api/tickets'
+import { Contact } from '@/api/contacts'
 
 interface CreateTicketData {
   subject: string;
@@ -42,6 +43,12 @@ export function useTicketCreate() {
     contact.email.toLowerCase().includes(debouncedSearch.toLowerCase())
   )
 
+  // Function to get a contact by ID
+  const getContactById = async (id: number): Promise<Contact | null> => {
+    const contact = contacts.contacts.find(c => c.id === id)
+    return contact || null
+  }
+
   return {
     contacts: filteredContacts,
     isLoadingContacts,
@@ -49,6 +56,7 @@ export function useTicketCreate() {
     setSearchTerm,
     createTicket: createTicketMutation.mutate,
     isCreating: createTicketMutation.isPending,
-    error: createTicketMutation.error
+    error: createTicketMutation.error,
+    getContactById
   }
 } 

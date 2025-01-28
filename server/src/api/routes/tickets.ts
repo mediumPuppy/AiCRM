@@ -271,10 +271,11 @@ const getTicketConversationHistory: RequestHandler = async (req, res) => {
   try {
     const ticketId = Number(req.params.id);
     
-    // Get chat messages
-    const { data: chatMessages } = await supabase
+    // Get chat messages from linked chat sessions
+    const { data: chatSessions } = await supabase
       .from('chat_sessions')
       .select(`
+        id,
         chat_messages (
           id,
           message,
@@ -284,8 +285,7 @@ const getTicketConversationHistory: RequestHandler = async (req, res) => {
           metadata
         )
       `)
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true });
+      .eq('ticket_id', ticketId);
 
     // Get notes
     const { data: notes } = await supabase
@@ -297,7 +297,7 @@ const getTicketConversationHistory: RequestHandler = async (req, res) => {
 
     // Combine and format the results
     const conversationHistory = [
-      ...(chatMessages || []).flatMap(session => 
+      ...(chatSessions || []).flatMap(session => 
         (session.chat_messages || []).map(msg => ({
           id: msg.id,
           type: 'chat_message',
@@ -319,7 +319,6 @@ const getTicketConversationHistory: RequestHandler = async (req, res) => {
     ].sort((a, b) => 
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
-
 
     res.json(conversationHistory);
   } catch (error) {
