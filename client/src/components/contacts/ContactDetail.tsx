@@ -14,6 +14,7 @@ import { TicketDetail } from '../tickets/TicketDetail';
 import { OutreachModal } from './OutreachModal';
 import { ChatSessionsTable } from '../chat-sessions/ChatSessionsTable';
 import { useContactChatSessions } from '@/hooks/useContactChatSessions';
+import { ChatSessionDetail } from '../chat-sessions/ChatSessionDetail';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +42,7 @@ interface ContactDetailProps {
 type ContactStatus = 'active' | 'archived';
 
 export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDetailProps) {
-  const [selectedTab, setSelectedTab] = useState<'details' | 'tickets' | 'notes'>('details');
+  const [selectedTab, setSelectedTab] = useState<'details' | 'history' | 'notes'>('details');
   const [pendingStatus, setPendingStatus] = useState<ContactStatus | null>(null);
   const [showOutreachModal, setShowOutreachModal] = useState(false);
   const { 
@@ -129,13 +130,13 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
               </button>
               <button
                 className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
-                  selectedTab === 'tickets' 
+                  selectedTab === 'history' 
                     ? 'bg-white text-gray-900 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                 }`}
-                onClick={() => setSelectedTab('tickets')}
+                onClick={() => setSelectedTab('history')}
               >
-                Tickets
+                History
               </button>
               <button
                 className={`h-9 px-4 rounded-md text-sm font-medium transition-colors ${
@@ -169,7 +170,7 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
               </div>
             )}
 
-            {selectedTab === 'tickets' && (
+            {selectedTab === 'history' && (
               <div className="space-y-4">
                 {isLoadingTickets ? (
                   <div className="text-center py-4">Loading tickets...</div>
@@ -195,6 +196,20 @@ export function ContactDetail({ contactId, onClose, onContactUpdate }: ContactDe
                         selectedSessionId={selectedChatSessionId}
                       />
                     </div>
+
+                    {/* Chat Session Detail Modal */}
+                    {selectedChatSessionId && (
+                      <div className="fixed inset-0 z-50 bg-white overflow-auto">
+                        <ChatSessionDetail 
+                          sessionId={selectedChatSessionId} 
+                          onClose={() => setSelectedChatSessionId(null)}
+                          onSessionUpdate={() => {
+                            // Refresh chat sessions when a session is updated
+                            // This will be handled by the useContactChatSessions hook's refetch
+                          }}
+                        />
+                      </div>
+                    )}
 
                     {/* Ticket Detail Modal */}
                     {selectedTicketId && (
