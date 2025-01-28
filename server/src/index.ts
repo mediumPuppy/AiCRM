@@ -29,6 +29,7 @@ import clientAuthRoutes from './api/routes/clientAuth'
 import activityRoutes from './api/routes/activity'
 import aiRoutes from './api/routes/ai'
 import metricsRoutes from './api/routes/metrics'
+import agentRoutes from './api/routes/agent'
 
 const app = express()
 app.use(express.json())
@@ -56,6 +57,7 @@ app.use('/api/webhooks', webhookRoutes)
 app.use('/api', authRoutes)
 app.use('/api', clientAuthRoutes)
 app.use('/api/activity', activityRoutes)
+app.use('/api/agent', agentRoutes)
 
 // Add before your routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
