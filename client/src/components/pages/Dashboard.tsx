@@ -4,6 +4,7 @@ import { StatsGrid } from '../dashboard/StatsGrid'
 import { RecentActivity } from '../dashboard/RecentActivity'
 import { QuickActions } from '../dashboard/QuickActions'
 import { TicketTrends, ContactGrowth } from '../dashboard/Charts'
+import { OutreachMetrics } from '../dashboard/OutreachMetrics'
 import { useCompanyStats } from '../../hooks/useCompanyStats'
 
 export default function Dashboard() {
@@ -55,6 +56,7 @@ export default function Dashboard() {
         {/* Charts Section - left side on desktop */}
         <div className="order-3 md:col-span-2 md:col-start-1 md:row-start-1 space-y-6">
           <Suspense fallback={<div>Loading charts...</div>}>
+            <OutreachMetrics />
             <TicketTrends />
             <ContactGrowth />
           </Suspense>

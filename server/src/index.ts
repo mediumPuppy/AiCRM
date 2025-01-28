@@ -28,6 +28,7 @@ import authRoutes from './api/routes/auth'
 import clientAuthRoutes from './api/routes/clientAuth'
 import activityRoutes from './api/routes/activity'
 import aiRoutes from './api/routes/ai'
+import metricsRoutes from './api/routes/metrics'
 
 const app = express()
 app.use(express.json())
@@ -36,6 +37,7 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, '../../client/dist')))
 
 // API Routes
+app.use('/api/metrics', metricsRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/api-keys', apiKeysRouter)
 app.use('/api/articles', articleRoutes)

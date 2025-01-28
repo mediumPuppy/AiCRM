@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS outreach_metrics (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add indexes
-CREATE INDEX outreach_metrics_contact_id_idx ON outreach_metrics(contact_id);
-CREATE INDEX outreach_metrics_created_at_idx ON outreach_metrics(created_at);
+-- Add indexes if they don't exist
+CREATE INDEX IF NOT EXISTS outreach_metrics_contact_id_idx ON outreach_metrics(contact_id);
+CREATE INDEX IF NOT EXISTS outreach_metrics_created_at_idx ON outreach_metrics(created_at);
 
--- Add trigger to update updated_at
+-- Drop trigger if exists and recreate
+DROP TRIGGER IF EXISTS set_outreach_metrics_updated_at ON outreach_metrics;
 CREATE TRIGGER set_outreach_metrics_updated_at
   BEFORE UPDATE ON outreach_metrics
   FOR EACH ROW
