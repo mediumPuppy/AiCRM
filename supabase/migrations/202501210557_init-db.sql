@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS citext;    -- Case-insensitive text (for emails)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- UUID generation
 CREATE EXTENSION IF NOT EXISTS pgcrypto;    -- For gen_random_uuid() if preferred over uuid_generate_v4()
-
+CREATE EXTENSION IF NOT EXISTS plpgsql;
 /*
   Supabase-compatible Postgres migration file that sets up a CRM database
   fulfilling the requirements outlined below. This schema is designed for
