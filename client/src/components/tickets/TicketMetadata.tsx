@@ -1,8 +1,13 @@
 import { Badge } from '../ui/badge'
 import type { Ticket } from '@/api/tickets'
+import type { Contact } from '@/types/contact.types'
+import type { User } from '@/types/user.types'
 
 interface TicketMetadataProps {
-  ticket: Ticket
+  ticket: Ticket & {
+    contact?: Contact | null;
+    agent?: User | null;
+  }
 }
 
 export function TicketMetadata({ ticket }: TicketMetadataProps) {
@@ -55,12 +60,26 @@ export function TicketMetadata({ ticket }: TicketMetadataProps) {
 
         <div>
           <label className="text-sm text-gray-500">Contact</label>
-          <div>Contact #{ticket.contact_id}</div>
+          <div>
+            {ticket.contact ? (
+              <span>{ticket.contact.full_name}</span>
+            ) : (
+              <span className="text-gray-400">Contact #{ticket.contact_id}</span>
+            )}
+          </div>
         </div>
 
         <div>
           <label className="text-sm text-gray-500">Assigned To</label>
-          <div>Agent #{ticket.assigned_to}</div>
+          <div>
+            {ticket.agent ? (
+              <span>{ticket.agent.full_name}</span>
+            ) : ticket.assigned_to ? (
+              <span className="text-gray-400">Agent #{ticket.assigned_to}</span>
+            ) : (
+              <span className="text-gray-400">Unassigned</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useTicketDetail } from '@/hooks/useTicketDetail'
 import { useTicketConversation } from '@/hooks/useTicketConversation'
+import { useContactDetail } from '@/hooks/useContactDetail'
+import { useAuth } from '@/contexts/AuthContext'
 import { TicketHeader } from './TicketHeader'
 import { TicketMetadata } from './TicketMetadata'
 import { TicketConversation } from './TicketConversation'
@@ -19,6 +21,8 @@ type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
 export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
   const { ticket, isLoading, updateStatus, updatePriority, addNote, assignToMe, unassign } = useTicketDetail(ticketId)
   const { conversation } = useTicketConversation(ticketId)
+  const { data: contact } = useContactDetail(ticket?.contact_id || 0)
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
 
   // Filter notes from conversation
@@ -48,10 +52,17 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
     return <div className="p-6">Ticket not found</div>
   }
 
+  // Enrich ticket with contact and agent info for child components
+  const enrichedTicket = {
+    ...ticket,
+    contact,
+    agent: user
+  }
+
   return (
     <div className="h-full bg-white flex flex-col">
       <TicketHeader 
-        ticket={ticket} 
+        ticket={enrichedTicket} 
         onClose={onClose}
       />
 
@@ -98,14 +109,14 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
         {/* Right Column - Actions & Metadata */}
         <div className="lg:w-72 order-2 lg:order-2 flex-shrink-0">
           <TicketActions 
-            ticket={ticket}
+            ticket={enrichedTicket}
             onStatusChange={handleStatusUpdate}
             onPriorityChange={handlePriorityUpdate}
             onAssignToMe={assignToMe}
             onUnassign={handleUnassign}
           />
           <div className="mt-6">
-            <TicketMetadata ticket={ticket} />
+            <TicketMetadata ticket={enrichedTicket} />
           </div>
         </div>
       </div>

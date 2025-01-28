@@ -7,11 +7,16 @@ import {
 } from '../ui/select'
 import { Button } from '../ui/button'
 import type { Ticket } from '@/api/tickets'
+import type { Contact } from '@/types/contact.types'
+import type { User } from '@/types/user.types'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 
 interface TicketActionsProps {
-  ticket: Ticket
+  ticket: Ticket & {
+    contact?: Contact | null;
+    agent?: User | null;
+  }
   onStatusChange: (status: Ticket['status']) => void
   onPriorityChange: (priority: Ticket['priority']) => void
   onAssignToMe: () => void
@@ -115,6 +120,16 @@ export function TicketActions({
         </div>
 
         <div className="pt-2 space-y-2">
+          {ticket.agent ? (
+            <div className="text-sm text-gray-500 mb-2">
+              Currently assigned to: {ticket.agent.full_name}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500 mb-2">
+              Currently unassigned
+            </div>
+          )}
+
           <Button 
             className="w-full"
             onClick={handleAssignToMe}
