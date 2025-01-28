@@ -4,7 +4,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function generateOutreachMessage(instruction: string, contactDetails: any): Promise<string> {
+export async function generateOutreachMessage(instruction: string, contactDetails: any, agentName?: string): Promise<string> {
   const prompt = `
 You are a helpful CRM assistant tasked with generating personalized outreach messages.
 Using the following contact details and instruction, generate a professional and friendly message:
@@ -14,10 +14,13 @@ ${Object.entries(contactDetails)
   .map(([key, value]) => `${key}: ${value}`)
   .join('\n')}
 
+${agentName ? `Agent Name: ${agentName}` : ''}
+
 Instruction from user:
 ${instruction}
 
 Generate a message that is professional, friendly, and tailored to the contact's details.
+${agentName ? `The message should be written from the perspective of ${agentName}.` : ''}
 `
 
   const response = await openai.chat.completions.create({

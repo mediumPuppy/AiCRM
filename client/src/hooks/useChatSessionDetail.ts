@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatsApi } from '@/api/chats'
 import type { ChatSession, ChatMessage } from '@/types/chat.types'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function useChatSessionDetail(sessionId: number) {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   // Fetch session details
   const { 
@@ -67,6 +69,18 @@ export function useChatSessionDetail(sessionId: number) {
     }
   })
 
+  // Assign to me mutation
+  const assignToMe = useMutation({
+    mutationFn: () => 
+      chatsApi.updateSession(sessionId, { 
+        agent_id: user?.id || undefined 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-session', sessionId] })
+      queryClient.invalidateQueries({ queryKey: ['chat-sessions'] })
+    }
+  })
+
   return {
     session,
     isLoading,
@@ -77,6 +91,7 @@ export function useChatSessionDetail(sessionId: number) {
     updateStatus: updateStatus.mutate,
     archiveSession: archiveSession.mutate,
     sendMessage: sendMessage.mutate,
-    isUpdating: updateStatus.isPending || archiveSession.isPending
+    assignToMe: assignToMe.mutate,
+    isUpdating: updateStatus.isPending || archiveSession.isPending || assignToMe.isPending
   }
 } 

@@ -8,6 +8,7 @@ import { IconX, IconMessage, IconSettings } from '@tabler/icons-react'
 import type { ChatSession } from '@/types/chat.types'
 import { AgentChatInput } from './AgentChatInput'
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ChatSessionDetailProps {
   sessionId: number
@@ -20,6 +21,7 @@ export function ChatSessionDetail({
   onClose,
   onSessionUpdate 
 }: ChatSessionDetailProps) {
+  const { user } = useAuth()
   const [showDetails, setShowDetails] = useState(false)
   const {
     session,
@@ -27,7 +29,8 @@ export function ChatSessionDetail({
     updateStatus,
     messages,
     isLoadingMessages,
-    sendMessage
+    sendMessage,
+    assignToMe
   } = useChatSessionDetail(sessionId)
 
   if (isLoading) {
@@ -44,6 +47,12 @@ export function ChatSessionDetail({
         <div className="text-red-500">Chat session not found</div>
       </div>
     )
+  }
+
+  const handleAssignToMe = async () => {
+    if (!user?.id) return
+    await assignToMe()
+    onSessionUpdate?.()
   }
 
   return (
@@ -138,6 +147,9 @@ export function ChatSessionDetail({
             <AgentChatInput
               onSendMessage={sendMessage}
               disabled={session.status !== 'active'}
+              contactId={session.contact?.id}
+              customerName={session.contact?.full_name}
+              agentName={user?.full_name}
             />
           </div>
         </div>
@@ -184,6 +196,32 @@ export function ChatSessionDetail({
                 <p className="text-sm text-gray-600">
                   {session.agent?.full_name || 'Unassigned'}
                 </p>
+              </div>
+            </div>
+
+            {/* Assignment Actions */}
+            <div>
+              <div className="flex flex-col gap-2">
+                {!session.agent_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAssignToMe}
+                    className="w-full"
+                  >
+                    Assign to Me
+                  </Button>
+                )}
+                {session.agent_id === user?.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateStatus('closed')}
+                    className="w-full"
+                  >
+                    Unassign
+                  </Button>
+                )}
               </div>
             </div>
 

@@ -39,7 +39,7 @@ export class ChatRepository implements IChatRepository {
   async findSessionById(id: number): Promise<ChatSession | null> {
     const { data: session, error } = await this.supabase
       .from(this.sessionsTable)
-      .select()
+      .select('*, contact:contacts(*), agent:users(*)')
       .eq('id', id)
       .single();
 
@@ -50,7 +50,7 @@ export class ChatRepository implements IChatRepository {
   async findSessionsByCompanyId(companyId: number, filters?: any): Promise<ChatSession[]> {
     let query = this.supabase
       .from(this.sessionsTable)
-      .select()
+      .select('*, contact:contacts(*), agent:users(*)')
       .eq('company_id', companyId);
 
     // Apply status filter

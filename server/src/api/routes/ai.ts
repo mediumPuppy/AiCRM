@@ -10,7 +10,8 @@ const generateOutreachDraft: RequestHandler = async (req, res) => {
       contactId, 
       instruction,
       generationCount = 1,
-      isFirstTry = true
+      isFirstTry = true,
+      agentName
     } = req.body
 
     if (!contactId || !instruction) {
@@ -32,7 +33,7 @@ const generateOutreachDraft: RequestHandler = async (req, res) => {
 
     // Generate the message
     const startTime = performance.now()
-    const draftMessage = await generateOutreachMessage(instruction, contactData)
+    const draftMessage = await generateOutreachMessage(instruction, contactData, agentName)
     const endTime = performance.now()
     const generationTime = endTime - startTime
 
