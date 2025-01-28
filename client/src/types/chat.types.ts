@@ -69,7 +69,7 @@ export interface CreateChatSessionDTO {
 }
 
 export interface UpdateChatSessionDTO {
-  agent_id?: number
+  agent_id?: number | null
   status?: ChatSessionStatus
   ended_at?: string
   metadata?: Record<string, any>

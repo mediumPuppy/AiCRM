@@ -30,7 +30,8 @@ export function ChatSessionDetail({
     messages,
     isLoadingMessages,
     sendMessage,
-    assignToMe
+    assignToMe,
+    unassign
   } = useChatSessionDetail(sessionId)
 
   if (isLoading) {
@@ -218,7 +219,10 @@ export function ChatSessionDetail({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => updateStatus('closed')}
+                    onClick={() => {
+                      unassign()
+                      onSessionUpdate?.()
+                    }}
                     className="w-full"
                   >
                     Unassign

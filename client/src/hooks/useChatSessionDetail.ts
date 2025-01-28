@@ -81,6 +81,18 @@ export function useChatSessionDetail(sessionId: number) {
     }
   })
 
+  // Unassign mutation
+  const unassign = useMutation({
+    mutationFn: () => 
+      chatsApi.updateSession(sessionId, { 
+        agent_id: null 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-session', sessionId] })
+      queryClient.invalidateQueries({ queryKey: ['chat-sessions'] })
+    }
+  })
+
   return {
     session,
     isLoading,
@@ -92,6 +104,7 @@ export function useChatSessionDetail(sessionId: number) {
     archiveSession: archiveSession.mutate,
     sendMessage: sendMessage.mutate,
     assignToMe: assignToMe.mutate,
-    isUpdating: updateStatus.isPending || archiveSession.isPending || assignToMe.isPending
+    unassign: unassign.mutate,
+    isUpdating: updateStatus.isPending || archiveSession.isPending || assignToMe.isPending || unassign.isPending
   }
 } 
