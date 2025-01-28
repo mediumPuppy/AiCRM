@@ -3,7 +3,7 @@ import { useContacts } from './useContacts'
 import { useDebounce } from './useDebounce'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { ticketsApi, Ticket } from '@/api/tickets'
-import { Contact } from '@/api/contacts'
+import { Contact } from '@/types/contact.types'
 
 interface CreateTicketData {
   subject: string;

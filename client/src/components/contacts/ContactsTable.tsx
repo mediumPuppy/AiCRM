@@ -10,7 +10,7 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import { formatDate } from '@/utils/formatDate'
-import { Contact } from '@/api/contacts'
+import { Contact } from '@/types/contact.types'
 
 interface ContactsTableProps {
   contacts: { contacts: Contact[]; total: number }

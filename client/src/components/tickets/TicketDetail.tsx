@@ -32,7 +32,6 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
   const { conversation } = useTicketConversation(ticketId)
   const { data: contact } = useContactDetail(ticket?.contact_id ?? 0)
   const { data: assignedAgent } = useUserDetail(ticket?.assigned_to ?? 0)
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
 
   // Filter notes from conversation
