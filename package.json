@@ -17,7 +17,8 @@
     "migrate": "cd server && npm run migrate"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.48.0"
+    "@supabase/supabase-js": "^2.48.0",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
