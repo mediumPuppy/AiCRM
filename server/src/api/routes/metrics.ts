@@ -1,14 +1,14 @@
-import { Router, Request, Response } from 'express'
+import { Router, Request, Response, RequestHandler } from 'express'
 import { supabase } from '../../lib/supabase'
 
 const router = Router()
 
-router.get('/outreach', async (req: Request, res: Response) => {
+const getOutreachMetrics: RequestHandler = async (req, res) => {
   try {
     // Get all metrics from the last 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
+    
     const { data: metrics, error } = await supabase
       .from('outreach_metrics')
       .select('*')
@@ -16,16 +16,18 @@ router.get('/outreach', async (req: Request, res: Response) => {
 
     if (error) {
       console.error('Failed to fetch outreach metrics:', error)
-      return res.status(500).json({ error: 'Failed to fetch metrics' })
+      res.status(500).json({ error: 'Failed to fetch metrics' })
+      return
     }
 
     if (!metrics) {
-      return res.json({
+      res.json({
         totalMessages: 0,
         averageGenerationTime: 0,
         firstTryAcceptanceRate: 0,
         averageGenerationsPerMessage: 0
       })
+      return
     }
 
     // Calculate aggregate metrics
@@ -35,7 +37,7 @@ router.get('/outreach', async (req: Request, res: Response) => {
     const firstTryAcceptanceRate = totalMessages > 0 ? firstTryAcceptances / totalMessages : 0
     const averageGenerationsPerMessage = metrics.reduce((sum, m) => sum + m.total_generations, 0) / totalMessages
 
-    return res.json({
+    res.json({
       totalMessages,
       averageGenerationTime,
       firstTryAcceptanceRate,
@@ -43,8 +45,10 @@ router.get('/outreach', async (req: Request, res: Response) => {
     })
   } catch (error) {
     console.error('Metrics calculation error:', error)
-    return res.status(500).json({ error: 'Failed to calculate metrics' })
+    res.status(500).json({ error: 'Failed to calculate metrics' })
   }
-})
+}
+
+router.get('/outreach', getOutreachMetrics)
 
 export default router 

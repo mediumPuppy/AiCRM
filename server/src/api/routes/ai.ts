@@ -1,10 +1,10 @@
-import { Router, Request, Response } from 'express'
+import { Router, Request, Response, RequestHandler } from 'express'
 import { generateOutreachMessage } from '../../services/llm'
 import { supabase } from '../../lib/supabase'
 
 const router = Router()
 
-router.post('/outreach-gpt', async (req: Request, res: Response) => {
+const generateOutreachDraft: RequestHandler = async (req, res) => {
   try {
     const { 
       contactId, 
@@ -14,7 +14,8 @@ router.post('/outreach-gpt', async (req: Request, res: Response) => {
     } = req.body
 
     if (!contactId || !instruction) {
-      return res.status(400).json({ error: 'Missing required fields: contactId and instruction' })
+      res.status(400).json({ error: 'Missing required fields: contactId and instruction' })
+      return
     }
 
     // Fetch contact details
@@ -25,7 +26,8 @@ router.post('/outreach-gpt', async (req: Request, res: Response) => {
       .single()
 
     if (contactError || !contactData) {
-      return res.status(404).json({ error: 'Contact not found' })
+      res.status(404).json({ error: 'Contact not found' })
+      return
     }
 
     // Generate the message
@@ -44,7 +46,7 @@ router.post('/outreach-gpt', async (req: Request, res: Response) => {
       created_at: new Date().toISOString()
     })
 
-    return res.json({ 
+    res.json({ 
       draft: draftMessage,
       metrics: {
         generationTime,
@@ -53,8 +55,10 @@ router.post('/outreach-gpt', async (req: Request, res: Response) => {
     })
   } catch (error) {
     console.error('OutreachGPT error:', error)
-    return res.status(500).json({ error: 'Failed to generate outreach message' })
+    res.status(500).json({ error: 'Failed to generate outreach message' })
   }
-})
+}
+
+router.post('/outreach-gpt', generateOutreachDraft)
 
 export default router 
