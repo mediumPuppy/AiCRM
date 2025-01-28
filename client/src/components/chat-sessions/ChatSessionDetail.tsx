@@ -110,7 +110,9 @@ export function ChatSessionDetail({
                     >
                       <Avatar className="flex-shrink-0 w-10 h-10">
                         <AvatarFallback>
-                          {message.sender_type === 'agent' ? 'A' : 'C'}
+                          {message.sender_type === 'agent' 
+                            ? (user?.full_name?.[0] || 'A')
+                            : (session.contact?.full_name?.[0] || 'C')}
                         </AvatarFallback>
                       </Avatar>
                       
