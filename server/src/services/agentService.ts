@@ -46,16 +46,6 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
     }
     console.log('Created agent_metrics entry:', newMetric)
 
-    // Create a trace for this operation
-    console.log('Creating Langfuse trace...')
-    const trace = langfuse.trace({
-      id: `ticket-${ticketId}`,
-      name: 'ActionRecommenderChain',
-      metadata: {
-        ticketId,
-      },
-    })
-
     // 1. Fetch the ticket from supabase
     console.log('Fetching ticket details...')
     const { data: ticket, error } = await supabase
@@ -73,6 +63,24 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
       throw new Error('Ticket not found')
     }
     console.log('Found ticket:', { id: ticket.id, subject: ticket.subject })
+
+    // Create a trace for this operation
+    console.log('Creating Langfuse trace...')
+    const trace = langfuse.trace({
+      id: `ticket-${ticketId}`,
+      name: 'ActionRecommenderChain',
+      metadata: {
+        ticketId,
+        ticket: {
+          subject: ticket.subject,
+          description: ticket.description
+        }
+      },
+      input: {
+        subject: ticket.subject,
+        description: ticket.description || ''
+      }
+    })
 
     // 2. Use a template or chain
     console.log('Initializing ChatOpenAI...')
@@ -103,6 +111,17 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
       subject: ticket.subject,
       description: ticket.description || ''
     })
+
+    // Create a span for the LLM call
+    const span = trace.span({
+      name: 'generate_recommendation',
+      input: {
+        prompt_template: prompt.template,
+        subject: ticket.subject,
+        description: ticket.description || ''
+      }
+    })
+
     const response = await chain.invoke({
       subject: ticket.subject,
       description: ticket.description || ''
@@ -114,6 +133,14 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
 
     // Extract the content from the AIMessage and ensure it's a string
     const recommendation = String(typeof response === 'string' ? response : response.content)
+
+    // Complete the span with the response
+    span.end({
+      output: recommendation,
+      metadata: {
+        latencyMs: latency
+      }
+    })
 
     // Update metrics
     console.log('Updating metrics with latency:', latency)
@@ -128,9 +155,10 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
     // Complete the trace
     console.log('Updating Langfuse trace...')
     trace.update({
+      output: recommendation,
       metadata: {
-        output: recommendation,
-        latencyMs: latency
+        latencyMs: latency,
+        metricId: newMetric.id
       }
     })
 

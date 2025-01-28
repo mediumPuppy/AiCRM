@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getAgentMetrics } from '@/api/agent'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { IconRobot, IconCheck, IconClock, IconBrain } from '@tabler/icons-react'
 
 export function AgentMetrics() {
   const { data, isLoading, error } = useQuery({
@@ -18,41 +19,54 @@ export function AgentMetrics() {
 
   return (
     <div className="space-y-4">
+      <h2 className="text-lg font-semibold">AI Agent Metrics</h2>
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Recommendations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregates.totalCount}</div>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <IconRobot size={32} stroke={1.5} className="text-primary" />
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase font-bold">Total Recommendations</p>
+                <div className="text-2xl font-bold">{aggregates.totalCount}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregates.successRate.toFixed(1)}%</div>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <IconCheck size={32} stroke={1.5} className="text-primary" />
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase font-bold">Helpful Rate</p>
+                <div className="text-2xl font-bold">{aggregates.successRate.toFixed(1)}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Successful Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregates.successCount}</div>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <IconBrain size={32} stroke={1.5} className="text-primary" />
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase font-bold">Helpful Actions</p>
+                <div className="text-2xl font-bold">{aggregates.successCount}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Response Time</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregates.avgLatency.toFixed(0)}ms</div>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <IconClock size={32} stroke={1.5} className="text-primary" />
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase font-bold">Avg. Response Time</p>
+                <div className="text-2xl font-bold">{aggregates.avgLatency.toFixed(0)}ms</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -69,7 +83,7 @@ export function AgentMetrics() {
                 <TableHead>Time</TableHead>
                 <TableHead>Agent</TableHead>
                 <TableHead>Ticket</TableHead>
-                <TableHead>Success</TableHead>
+                <TableHead>Helpful</TableHead>
                 <TableHead>Latency</TableHead>
               </TableRow>
             </TableHeader>
@@ -82,7 +96,13 @@ export function AgentMetrics() {
                   <TableCell>{metric.agent_name}</TableCell>
                   <TableCell>#{metric.ticket_id}</TableCell>
                   <TableCell>
-                    {metric.success === null ? 'Pending' : metric.success ? 'Yes' : 'No'}
+                    {metric.success === null ? (
+                      <span className="text-gray-500">Pending</span>
+                    ) : metric.success ? (
+                      <span className="text-green-600">Yes</span>
+                    ) : (
+                      <span className="text-red-600">No</span>
+                    )}
                   </TableCell>
                   <TableCell>{metric.latency_ms}ms</TableCell>
                 </TableRow>

@@ -1,11 +1,12 @@
 import { Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { StatsGrid } from '../dashboard/StatsGrid'
-import { RecentActivity } from '../dashboard/RecentActivity'
-import { QuickActions } from '../dashboard/QuickActions'
-import { TicketTrends, ContactGrowth } from '../dashboard/Charts'
-import { OutreachMetrics } from '../dashboard/OutreachMetrics'
-import { useCompanyStats } from '../../hooks/useCompanyStats'
+import { useCompanyStats } from '@/hooks/useCompanyStats'
+import { StatsGrid } from '@/components/dashboard/StatsGrid'
+import { OutreachMetrics } from '@/components/dashboard/OutreachMetrics'
+import { TicketTrends, ContactGrowth } from '@/components/dashboard/Charts'
+import { QuickActions } from '@/components/dashboard/QuickActions'
+import { RecentActivity } from '@/components/dashboard/RecentActivity'
+import { AgentMetrics } from '@/components/dashboard/AgentMetrics'
 
 export default function Dashboard() {
   const { error } = useCompanyStats("1");
@@ -56,6 +57,7 @@ export default function Dashboard() {
         {/* Charts Section - left side on desktop */}
         <div className="order-3 md:col-span-2 md:col-start-1 md:row-start-1 space-y-6">
           <Suspense fallback={<div>Loading charts...</div>}>
+            <AgentMetrics />
             <OutreachMetrics />
             <TicketTrends />
             <ContactGrowth />
