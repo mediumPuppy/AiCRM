@@ -1,9 +1,10 @@
-import { ChatOpenAI } from '@langchain/openai'
-import { PromptTemplate } from '@langchain/core/prompts'
-import { RunnableSequence } from '@langchain/core/runnables'
-import { supabase } from '@/lib/supabase'
-import { performance } from 'perf_hooks'
-import { Langfuse } from 'langfuse'
+import { ChatOpenAI } from "@langchain/openai";
+import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
+import { ArticleSearchTool } from "./tools/ArticleSearchTool";
+import { supabase } from "../lib/supabase";
+import { performance } from 'perf_hooks';
+import { Langfuse } from 'langfuse';
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from "@langchain/core/prompts";
 
 // Initialize Langfuse client
 const langfuse = new Langfuse({
@@ -11,15 +12,11 @@ const langfuse = new Langfuse({
   secretKey: process.env.LANGFUSE_SECRET_KEY || '',
   baseUrl: process.env.LANGFUSE_HOST
 })
-console.log('Langfuse initialized with:', {
-  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-  secretKey: process.env.LANGFUSE_SECRET_KEY,
-  baseUrl: process.env.LANGFUSE_HOST
-})
+
 
 interface AgentResponse {
-  recommendation: string
-  metricId: number
+  recommendation: string;
+  metricId: number;
 }
 
 export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse> {
@@ -82,68 +79,49 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
       }
     })
 
-    // 2. Use a template or chain
-    console.log('Initializing ChatOpenAI...')
+    // 2. Initialize the agent with tools
     const model = new ChatOpenAI({
       temperature: 0,
-      openAIApiKey: process.env.OPENAI_API_KEY
-    })
+      modelName: "gpt-4o-mini",
+    });
 
-    console.log('Creating prompt template...')
-    const prompt = new PromptTemplate({
-      template: `
-        You are an AI assistant. You have ticket details:
-        Subject: {subject}
-        Description: {description}
+    const tools = [
+      new ArticleSearchTool(),
+    ];
 
-        Suggest the next best action to take on this ticket. 
-        Return a short text with your recommendation.
-      `,
-      inputVariables: ['subject', 'description']
-    })
+    const prompt = ChatPromptTemplate.fromMessages([
+      SystemMessagePromptTemplate.fromTemplate(
+        "You are a helpful support agent assistant. Your goal is to help resolve customer support tickets by searching relevant documentation and providing clear, actionable recommendations."
+      ),
+      HumanMessagePromptTemplate.fromTemplate("{input}"),
+      new MessagesPlaceholder("agent_scratchpad"),
+    ]);
 
-    // Create a chain using RunnableSequence
-    console.log('Creating RunnableSequence...')
-    const chain = RunnableSequence.from([prompt, model])
+    const agent = await createOpenAIFunctionsAgent({
+      llm: model,
+      tools,
+      prompt,
+    });
 
-    // 3. Run the chain
-    console.log('Running chain with inputs:', {
-      subject: ticket.subject,
-      description: ticket.description || ''
-    })
+    const executor = AgentExecutor.fromAgentAndTools({
+      agent,
+      tools,
+      verbose: true,
+      maxIterations: 3, // Limit the number of tool calls
+      returnIntermediateSteps: true, // This will help with debugging
+    });
 
-    // Create a span for the LLM call
-    const span = trace.span({
-      name: 'generate_recommendation',
-      input: {
-        prompt_template: prompt.template,
-        subject: ticket.subject,
-        description: ticket.description || ''
-      }
-    })
+    // 3. Run the agent
+    const result = await executor.invoke({
+      input: `Given this support ticket with subject "${ticket.subject}" and description "${ticket.description}", 
+      first search for any relevant support articles that might help, then recommend the next best action. 
+      If you find relevant articles, incorporate their information into your recommendation.`
+    });
 
-    const response = await chain.invoke({
-      subject: ticket.subject,
-      description: ticket.description || ''
-    })
-    console.log('Got response from chain:', response)
-
+    // 4. Update metrics with completion info
     const t1 = performance.now()
     const latency = Math.round(t1 - t0)
-
-    // Extract the content from the AIMessage and ensure it's a string
-    const recommendation = String(typeof response === 'string' ? response : response.content)
-
-    // Complete the span with the response
-    span.end({
-      output: recommendation,
-      metadata: {
-        latencyMs: latency
-      }
-    })
-
-    // Update metrics
-    console.log('Updating metrics with latency:', latency)
+    
     await supabase
       .from('agent_metrics')
       .update({
@@ -155,7 +133,7 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
     // Complete the trace
     console.log('Updating Langfuse trace...')
     trace.update({
-      output: recommendation,
+      output: result.output,
       metadata: {
         latencyMs: latency,
         metricId: newMetric.id
@@ -163,7 +141,7 @@ export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse>
     })
 
     return {
-      recommendation,
+      recommendation: result.output,
       metricId: newMetric.id
     }
   } catch (error) {

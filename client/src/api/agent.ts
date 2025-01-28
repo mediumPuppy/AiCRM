@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-interface AgentMetricsResponse {
+export interface AgentMetricsResponse {
   metrics: Array<{
     id: number
     agent_name: string
@@ -19,7 +19,7 @@ interface AgentMetricsResponse {
   }
 }
 
-interface AgentRecommendation {
+export interface AgentRecommendation {
   recommendation: string
   metricId: number
 }

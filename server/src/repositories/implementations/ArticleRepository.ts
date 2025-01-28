@@ -99,8 +99,12 @@ export class ArticleRepository implements IArticleRepository {
     const { data: articles, error } = await this.supabase
       .from(this.tableName)
       .select()
-      .textSearch('search_vector', query)
-      .eq('status', 'published');
+      .textSearch('title || \' \' || content', query, {
+        type: 'plain',
+        config: 'english'
+      })
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return articles.map(article => new ArticleEntity(article) as Article);
