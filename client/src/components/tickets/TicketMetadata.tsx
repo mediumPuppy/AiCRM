@@ -1,6 +1,6 @@
 import { Badge } from '../ui/badge'
 import type { Ticket } from '@/api/tickets'
-import type { Contact } from '@/api/contacts'
+import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
 import { useCompanyDetail } from '@/hooks/useCompanyDetail'
 

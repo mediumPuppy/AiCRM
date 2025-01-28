@@ -7,7 +7,7 @@ import {
 } from '../ui/select'
 import { Button } from '../ui/button'
 import type { Ticket } from '@/api/tickets'
-import type { Contact } from '@/api/contacts'
+import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
