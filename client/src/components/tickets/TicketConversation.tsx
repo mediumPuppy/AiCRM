@@ -1,10 +1,11 @@
 import { useTicketConversation } from '@/hooks/useTicketConversation';
 import { useTicketDetail } from '@/hooks/useTicketDetail';
 import { useContactDetail } from '@/hooks/useContactDetail';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUserDetail } from '@/hooks/useUserDetail';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Progress } from '../ui/progress';
 import { format } from 'date-fns';
+import { useMemo } from 'react';
 
 interface TicketConversationProps {
   ticketId: number;
@@ -14,12 +15,28 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
   const { conversation, isLoading } = useTicketConversation(ticketId);
   const { ticket } = useTicketDetail(ticketId);
   const { data: contact } = useContactDetail(ticket?.contact_id || 0);
-  const { user } = useAuth();
   
   // Filter and sort conversation items
   const conversationItems = conversation
     ?.filter(item => ['chat_message', 'email', 'sms'].includes(item.type))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
+
+  // Get unique agent IDs from conversation
+  const agentIds = useMemo(() => {
+    const ids = new Set<number>();
+    conversationItems.forEach(item => {
+      if (item.sender_type === 'agent' && item.sender_id) {
+        ids.add(item.sender_id);
+      }
+    });
+    return Array.from(ids);
+  }, [conversationItems]);
+
+  // Fetch all agent details at once
+  const agentQueries = agentIds.map(id => useUserDetail(id));
+  const agents = Object.fromEntries(
+    agentIds.map((id, index) => [id, agentQueries[index].data])
+  );
 
   if (isLoading || !ticket) {
     return (
@@ -40,7 +57,10 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
 
   return (
     <div className="space-y-6 min-h-0">
-      {conversationItems.map((item) => (
+      {conversationItems.map((item) => {
+        const sender = item.sender_type === 'agent' ? agents[item.sender_id] : null;
+        
+        return (
           <div
           key={`${item.type}-${item.id}`}
           className={`flex gap-4 ${
@@ -50,7 +70,7 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
           <Avatar className="flex-shrink-0 w-10 h-10">
               <AvatarFallback>
                 {item.sender_type === 'agent' 
-                  ? (user?.full_name?.[0] || 'A')
+                  ? (sender?.full_name?.[0] || 'A')
                   : (contact?.full_name?.[0] || 'C')}
               </AvatarFallback>
             </Avatar>
@@ -69,7 +89,7 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">
                 {item.sender_type === 'agent' 
-                  ? (user?.full_name || 'Agent')
+                  ? (sender?.full_name || 'Agent')
                   : (contact?.full_name || 'Customer')}
               </span>
               <span className="text-sm text-gray-500">
@@ -79,7 +99,8 @@ export function TicketConversation({ ticketId }: TicketConversationProps) {
             <p className="whitespace-pre-wrap">{item.message}</p>
             </div>
           </div>
-      ))}
+        );
+      })}
     </div>
   );
 } 
