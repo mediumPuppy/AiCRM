@@ -1,21 +1,16 @@
-import { Pool } from 'pg'
 import * as fs from 'fs'
 import * as path from 'path'
-import 'dotenv/config'
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-})
+import { supabase } from '../lib/supabase'
 
 async function runMigrations() {
   try {
     // Create migrations table if it doesn't exist
-    await pool.query(`
+    await supabase.rpc('exec', { query: `
       CREATE TABLE IF NOT EXISTS migrations (
         name TEXT PRIMARY KEY,
         executed_at TIMESTAMPTZ DEFAULT NOW()
       )
-    `)
+    `})
 
     const migrationsPath = path.join(__dirname, '../../../supabase/migrations')
     const files = fs.readdirSync(migrationsPath)
@@ -26,12 +21,13 @@ async function runMigrations() {
 
     for (const file of files) {
       // Check if migration was already executed
-      const { rows } = await pool.query(
-        'SELECT name FROM migrations WHERE name = $1',
-        [file]
-      )
+      const { data: rows } = await supabase
+        .from('migrations')
+        .select()
+        .eq('name', file)
+        .single()
 
-      if (rows.length > 0) {
+      if (rows) {
         console.log(`Skipping migration ${file} - already executed`)
         continue
       }
@@ -40,22 +36,22 @@ async function runMigrations() {
       const sql = fs.readFileSync(path.join(migrationsPath, file), 'utf8')
       
       try {
-        await pool.query('BEGIN')
-        await pool.query(sql)
-        await pool.query('INSERT INTO migrations (name) VALUES ($1)', [file])
-        await pool.query('COMMIT')
+        await supabase.rpc('exec', { query: 'BEGIN' })
+        await supabase.rpc('exec', { query: sql })
+        await supabase.from('migrations').insert({ name: file })
+        await supabase.rpc('exec', { query: 'COMMIT' })
         console.log(`Successfully ran migration: ${file}`)
-      } catch (error: any) {
-        await pool.query('ROLLBACK')
-        throw new Error(`Migration ${file} failed: ${error.message}`)
+      } catch (error: unknown) {
+        await supabase.rpc('exec', { query: 'ROLLBACK' })
+        if (error instanceof Error) {
+          throw new Error(`Migration ${file} failed: ${error.message}`)
+        }
       }
     }
-
-    console.log('All migrations completed successfully')
-  } catch (error) {
-    console.error('Migration failed:', error)
-    process.exit(1)
+  } catch (error: unknown) {
+    console.error('Error running migrations:', error)
+    throw error
   }
 }
 
-runMigrations() 
+runMigrations()
