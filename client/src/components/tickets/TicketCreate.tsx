@@ -3,8 +3,7 @@ import { useTicketCreate } from '@/hooks/useTicketCreate'
 import { useCreateContact } from '@/hooks/useCreateContact'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '../ui/button'
-import { Contact } from '@/api/contacts'
-
+import { Contact } from '@/types/contact.types'
 interface TicketCreateProps {
   onClose: () => void
   onTicketCreated?: () => void

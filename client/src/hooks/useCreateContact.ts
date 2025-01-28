@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { contactsApi, CreateContactData } from '@/api/contacts';
+import { contactsApi } from '@/api/contacts';
+import { CreateContactData } from '@/types/contact.types';
 
 export function useCreateContact() {
   const queryClient = useQueryClient();

@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { contactsApi, Contact } from '@/api/contacts';
-
-type UpdateContactData = Partial<Contact>;
+import { contactsApi } from '@/api/contacts';
+import { UpdateContactData } from '@/types/contact.types';
 
 export function useUpdateContact() {
   const queryClient = useQueryClient();

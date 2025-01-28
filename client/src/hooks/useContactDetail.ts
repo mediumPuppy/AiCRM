@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { contactsApi, Contact } from '@/api/contacts';
+import { contactsApi } from '@/api/contacts';
+import { Contact } from '@/types/contact.types';
 
 export function useContactDetail(contactId: number) {
   return useQuery<Contact>({

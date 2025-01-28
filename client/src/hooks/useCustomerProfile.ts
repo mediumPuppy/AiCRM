@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useContactDetail } from './useContactDetail'
 import { useUpdateContact } from '@/hooks/useUpdateContact'
 import { useToast } from './use-toast'
-import type { Contact } from '@/api/contacts'
+import type { Contact } from '@/types/contact.types'
 
 export function useCustomerProfile() {
   const { contact } = useAuth()

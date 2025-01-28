@@ -10,7 +10,7 @@ import { TicketConversation } from './TicketConversation'
 import { TicketNotes } from './TicketNotes'
 import { TicketActions } from './TicketActions'
 import type { Ticket } from '@/api/tickets'
-import type { Contact } from '@/api/contacts'
+import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
 
 interface TicketDetailProps {
@@ -30,8 +30,8 @@ type EnrichedTicket = Ticket & {
 export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
   const { ticket, isLoading, updateStatus, updatePriority, addNote, assignToMe, unassign } = useTicketDetail(ticketId)
   const { conversation } = useTicketConversation(ticketId)
-  const { data: contact } = useContactDetail(ticket?.contact_id || 0)
-  const { data: assignedAgent } = useUserDetail(ticket?.assigned_to)
+  const { data: contact } = useContactDetail(ticket?.contact_id ?? 0)
+  const { data: assignedAgent } = useUserDetail(ticket?.assigned_to ?? 0)
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
 
