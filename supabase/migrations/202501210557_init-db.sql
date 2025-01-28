@@ -25,20 +25,7 @@ CREATE EXTENSION IF NOT EXISTS plpgsql;
   12) Public SDK alignment (logical, documented schema for external devs).
 */
 
-BEGIN;
--- Create the exec_sql function
-CREATE OR REPLACE FUNCTION public.exec_sql(sql text)
-RETURNS void AS $$
-BEGIN
-  EXECUTE sql;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Grant execute permission
-GRANT EXECUTE ON FUNCTION public.exec_sql(text) TO service_role;
-
--- Type definitions should come before table creation
--- Existing webhook event type
+-- start directly with type definitions
 CREATE TYPE webhook_event_type AS ENUM (
     'contact.created',
     'contact.updated',
@@ -509,5 +496,3 @@ CREATE INDEX IF NOT EXISTS idx_tickets_subject_description ON public.tickets USI
 -- Add chat tables to realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE chat_sessions;
-
-COMMIT;
