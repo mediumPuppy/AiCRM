@@ -2,6 +2,7 @@ import { Badge } from '../ui/badge'
 import type { Ticket } from '@/api/tickets'
 import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
+import { useCompanyDetail } from '@/hooks/useCompanyDetail'
 
 interface TicketMetadataProps {
   ticket: Ticket & {
@@ -11,6 +12,8 @@ interface TicketMetadataProps {
 }
 
 export function TicketMetadata({ ticket }: TicketMetadataProps) {
+  const { data: company } = useCompanyDetail(ticket.company_id)
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
@@ -55,7 +58,13 @@ export function TicketMetadata({ ticket }: TicketMetadataProps) {
 
         <div>
           <label className="text-sm text-gray-500">Company</label>
-          <div>Company #{ticket.company_id}</div>
+          <div>
+            {company ? (
+              <span>{company.name}</span>
+            ) : (
+              <span className="text-gray-400">Company #{ticket.company_id}</span>
+            )}
+          </div>
         </div>
 
         <div>
