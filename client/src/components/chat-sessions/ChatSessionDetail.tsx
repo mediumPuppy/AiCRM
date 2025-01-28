@@ -1,14 +1,19 @@
+import { useState } from 'react'
+import { Button } from '../ui/button'
+import { ScrollArea } from '../ui/scroll-area'
+import { useAuth } from '@/contexts/AuthContext'
 import { useChatSessionDetail } from '@/hooks/useChatSessionDetail'
+import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow, format } from 'date-fns'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
 import { Avatar } from '../ui/avatar'
 import { AvatarFallback } from '../ui/avatar'
 import { IconX, IconMessage, IconSettings } from '@tabler/icons-react'
 import type { ChatSession } from '@/types/chat.types'
 import { AgentChatInput } from './AgentChatInput'
-import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { ChatMessage } from './ChatMessage'
+import { MessageInput } from './MessageInput'
+import { GenerateMessageDialog } from './GenerateMessageDialog'
 
 interface ChatSessionDetailProps {
   sessionId: number
@@ -21,6 +26,7 @@ export function ChatSessionDetail({
   onClose,
   onSessionUpdate 
 }: ChatSessionDetailProps) {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [showDetails, setShowDetails] = useState(false)
   const {
@@ -33,6 +39,34 @@ export function ChatSessionDetail({
     assignToMe,
     unassign
   } = useChatSessionDetail(sessionId)
+
+  const handleCreateTicket = () => {
+    if (!session?.contact_id || !session?.company_id) return
+    
+    // Create a description that includes the chat history
+    const chatHistory = messages?.map(msg => {
+      const sender = msg.sender_type === 'agent' ? (user?.full_name || 'Agent') : (session.contact?.full_name || 'Customer')
+      const time = format(new Date(msg.created_at), 'yyyy-MM-dd HH:mm:ss')
+      return `[${time}] ${sender}:\n${msg.message}\n`
+    }).join('\n') || ''
+
+    const description = `Created from chat session #${session.id}\n\nChat History:\n${chatHistory}`
+    
+    // Navigate to tickets page with create action and pre-filled data
+    const ticketData = {
+      company_id: session.company_id,
+      contact_id: session.contact_id,
+      assigned_to: user?.id,
+      subject: `Chat Session #${session.id} Follow-up`,
+      description,
+      priority: 'normal',
+      status: 'open'
+    }
+    
+    navigate('/tickets?action=create&panel=new', { 
+      state: { ticketData } 
+    })
+  }
 
   if (isLoading) {
     return (
@@ -229,6 +263,19 @@ export function ChatSessionDetail({
                   </Button>
                 )}
               </div>
+            </div>
+
+            {/* Create Ticket Button */}
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreateTicket}
+                className="w-full"
+                disabled={!session?.contact_id}
+              >
+                Convert to Ticket
+              </Button>
             </div>
 
             {/* Session Status */}

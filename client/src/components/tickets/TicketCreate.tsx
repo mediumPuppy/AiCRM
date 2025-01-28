@@ -7,21 +7,30 @@ import { Button } from '../ui/button'
 interface TicketCreateProps {
   onClose: () => void
   onTicketCreated?: () => void
+  initialData?: {
+    company_id: number
+    contact_id: number
+    assigned_to?: number
+    subject: string
+    description: string
+    status: TicketStatus
+    priority: TicketPriority
+  }
 }
 
 type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed'
 type TicketPriority = 'low' | 'normal' | 'high' | 'urgent'
 
-export function TicketCreate({ onClose, onTicketCreated }: TicketCreateProps) {
+export function TicketCreate({ onClose, onTicketCreated, initialData }: TicketCreateProps) {
   // Add queryClient at the top of the component
   const queryClient = useQueryClient()
   
   // Form state
-  const [subject, setSubject] = useState('')
-  const [description, setDescription] = useState('')
-  const [status, setStatus] = useState<TicketStatus>('open')
-  const [priority, setPriority] = useState<TicketPriority>('normal')
-  const [contactId, setContactId] = useState<number | null>(null)
+  const [subject, setSubject] = useState(initialData?.subject || '')
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [status, setStatus] = useState<TicketStatus>(initialData?.status || 'open')
+  const [priority, setPriority] = useState<TicketPriority>(initialData?.priority || 'normal')
+  const [contactId, setContactId] = useState<number | null>(initialData?.contact_id || null)
   const [isCreatingContact, setIsCreatingContact] = useState(false)
   const [newContactData, setNewContactData] = useState({
     full_name: '',

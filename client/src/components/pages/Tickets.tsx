@@ -1,5 +1,5 @@
 import { Suspense, useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { TicketsTable } from '../tickets/TicketsTable'
 import { TicketsFilters } from '../tickets/TicketsFilters'
 import { useTickets } from '@/hooks/useTickets'
@@ -8,7 +8,7 @@ import { TablePageHeader } from '../ui/table-page-header'
 import { TicketCreate } from '../tickets/TicketCreate'
 
 export default function Tickets() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     tickets,
     isLoading,
@@ -20,6 +20,7 @@ export default function Tickets() {
   } = useTickets()
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null)
   const [isCreatingTicket, setIsCreatingTicket] = useState(false)
+  const location = useLocation()
 
   // Handle URL parameters for panels
   useEffect(() => {
@@ -101,11 +102,18 @@ export default function Tickets() {
       {isCreatingTicket && (
         <div className="fixed inset-0 z-50 bg-white overflow-auto">
           <TicketCreate 
-            onClose={() => setIsCreatingTicket(false)}
+            onClose={() => {
+              setIsCreatingTicket(false)
+              // Clear the URL parameters
+              setSearchParams({})
+            }}
             onTicketCreated={() => {
               refreshTickets()
               setIsCreatingTicket(false)
+              // Clear the URL parameters
+              setSearchParams({})
             }}
+            initialData={location.state?.ticketData}
           />
         </div>
       )}
