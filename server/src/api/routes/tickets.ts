@@ -299,14 +299,14 @@ const getTicketConversationHistory: RequestHandler = async (req, res) => {
     const conversationHistory = [
       ...(chatSessions || []).flatMap(session => 
         (session.chat_messages || []).map(msg => ({
-          id: msg.id,
-          type: 'chat_message',
-          message: msg.message,
-          sender_type: msg.sender_type,
-          sender_id: msg.sender_id,
-          created_at: msg.created_at,
-          metadata: msg.metadata
-        }))
+        id: msg.id,
+        type: 'chat_message',
+        message: msg.message,
+        sender_type: msg.sender_type,
+        sender_id: msg.sender_id,
+        created_at: msg.created_at,
+        metadata: msg.metadata
+      }))
       ),
       ...(notes || []).map(note => ({
         id: note.id,

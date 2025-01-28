@@ -169,7 +169,7 @@ export function ChatSessionDetail({
                       <Avatar className="flex-shrink-0 w-10 h-10">
                         <AvatarFallback>
                           {message.sender_type === 'agent' 
-                            ? (user?.full_name?.[0] || 'A')
+                            ? (session.agent?.full_name?.[0] || 'A')
                             : (session.contact?.full_name?.[0] || 'C')}
                         </AvatarFallback>
                       </Avatar>
@@ -187,7 +187,9 @@ export function ChatSessionDetail({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">
-                            {message.sender_type === 'agent' ? (user?.full_name || 'Agent') : session.contact?.full_name || 'Customer'}
+                            {message.sender_type === 'agent' 
+                              ? (session.agent?.full_name || 'Agent')
+                              : (session.contact?.full_name || 'Customer')}
                           </span>
                           <span className="text-sm text-gray-500">
                             {format(new Date(message.created_at), 'HH:mm')}
