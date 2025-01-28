@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { useTicketDetail } from '@/hooks/useTicketDetail'
 import { useTicketConversation } from '@/hooks/useTicketConversation'
 import { useContactDetail } from '@/hooks/useContactDetail'
+import { useUserDetail } from '@/hooks/useUserDetail'
 import { useAuth } from '@/contexts/AuthContext'
 import { TicketHeader } from './TicketHeader'
 import { TicketMetadata } from './TicketMetadata'
 import { TicketConversation } from './TicketConversation'
 import { TicketNotes } from './TicketNotes'
 import { TicketActions } from './TicketActions'
+import type { Ticket } from '@/api/tickets'
+import type { Contact } from '@/types/contact.types'
+import type { User } from '@/types/user.types'
 
 interface TicketDetailProps {
   ticketId: number
@@ -18,10 +22,16 @@ interface TicketDetailProps {
 type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
 
+type EnrichedTicket = Ticket & {
+  contact?: Contact | null;
+  agent?: User | null;
+}
+
 export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetailProps) {
   const { ticket, isLoading, updateStatus, updatePriority, addNote, assignToMe, unassign } = useTicketDetail(ticketId)
   const { conversation } = useTicketConversation(ticketId)
   const { data: contact } = useContactDetail(ticket?.contact_id || 0)
+  const { data: assignedAgent } = useUserDetail(ticket?.assigned_to)
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'conversation' | 'notes'>('conversation')
 
@@ -39,6 +49,11 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
     onTicketUpdate?.();
   };
 
+  const handleAssignToMe = async () => {
+    await assignToMe();
+    onTicketUpdate?.();
+  };
+
   const handleUnassign = async () => {
     await unassign();
     onTicketUpdate?.();
@@ -53,10 +68,10 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
   }
 
   // Enrich ticket with contact and agent info for child components
-  const enrichedTicket = {
+  const enrichedTicket: EnrichedTicket = {
     ...ticket,
-    contact,
-    agent: user
+    contact: contact || null,
+    agent: assignedAgent || null
   }
 
   return (
@@ -112,7 +127,7 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
             ticket={enrichedTicket}
             onStatusChange={handleStatusUpdate}
             onPriorityChange={handlePriorityUpdate}
-            onAssignToMe={assignToMe}
+            onAssignToMe={handleAssignToMe}
             onUnassign={handleUnassign}
           />
           <div className="mt-6">
