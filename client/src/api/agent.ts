@@ -21,11 +21,12 @@ interface AgentMetricsResponse {
 
 interface AgentRecommendation {
   recommendation: string
+  metricId: number
 }
 
-export async function getAgentRecommendation(ticketId: number): Promise<string> {
+export async function getAgentRecommendation(ticketId: number): Promise<AgentRecommendation> {
   const { data } = await axios.post<AgentRecommendation>('/api/agent/action-recommender', { ticketId })
-  return data.recommendation
+  return data
 }
 
 export async function evaluateRecommendation(metricId: number, success: boolean): Promise<void> {

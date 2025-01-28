@@ -9,9 +9,20 @@ import { Langfuse } from 'langfuse'
 const langfuse = new Langfuse({
   publicKey: process.env.LANGFUSE_PUBLIC_KEY || '',
   secretKey: process.env.LANGFUSE_SECRET_KEY || '',
+  baseUrl: process.env.LANGFUSE_HOST
+})
+console.log('Langfuse initialized with:', {
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+  secretKey: process.env.LANGFUSE_SECRET_KEY,
+  baseUrl: process.env.LANGFUSE_HOST
 })
 
-export async function runAgentOnTicket(ticketId: number) {
+interface AgentResponse {
+  recommendation: string
+  metricId: number
+}
+
+export async function runAgentOnTicket(ticketId: number): Promise<AgentResponse> {
   console.log('Starting runAgentOnTicket with ticketId:', ticketId)
   const t0 = performance.now()
   
@@ -101,8 +112,8 @@ export async function runAgentOnTicket(ticketId: number) {
     const t1 = performance.now()
     const latency = Math.round(t1 - t0)
 
-    // Extract the content from the AIMessage
-    const recommendation = typeof response === 'string' ? response : response.content
+    // Extract the content from the AIMessage and ensure it's a string
+    const recommendation = String(typeof response === 'string' ? response : response.content)
 
     // Update metrics
     console.log('Updating metrics with latency:', latency)
@@ -123,7 +134,10 @@ export async function runAgentOnTicket(ticketId: number) {
       }
     })
 
-    return recommendation
+    return {
+      recommendation,
+      metricId: newMetric.id
+    }
   } catch (error) {
     console.error('Error in runAgentOnTicket:', error)
     if (error instanceof Error) {

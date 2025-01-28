@@ -77,7 +77,8 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
       console.log('Getting recommendation for ticket:', ticketId)
       const result = await getAgentRecommendation(ticketId)
       console.log('Got recommendation result:', result)
-      setRecommendation(result)
+      setRecommendation(result.recommendation)
+      setMetricId(result.metricId)
     } catch (error) {
       console.error('Failed to get recommendation:', error)
       if (error instanceof Error) {
@@ -94,10 +95,13 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
   }
 
   const handleEvaluateRecommendation = async (success: boolean) => {
-    if (!metricId) return
+    if (!metricId) {
+      console.error('No metricId available for evaluation')
+      return
+    }
     try {
       await evaluateRecommendation(metricId, success)
-      // Optionally clear the recommendation after evaluation
+      // Clear the recommendation and metricId after evaluation
       setRecommendation(null)
       setMetricId(null)
     } catch (error) {

@@ -25,9 +25,9 @@ const handleActionRecommender: RequestHandler<{}, {}, ActionRecommenderRequest> 
     }
 
     console.log('Calling runAgentOnTicket with ticketId:', ticketId)
-    const recommendation = await runAgentOnTicket(ticketId)
+    const { recommendation, metricId } = await runAgentOnTicket(ticketId)
     console.log('Got recommendation:', recommendation)
-    res.json({ recommendation })
+    res.json({ recommendation, metricId })
   } catch (error) {
     console.error('Agent failed with error:', error)
     if (error instanceof Error) {
