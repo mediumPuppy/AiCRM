@@ -11,12 +11,11 @@ import { TicketActions } from './TicketActions'
 import type { Ticket } from '@/api/tickets'
 import type { Contact } from '@/types/contact.types'
 import type { User } from '@/types/user.types'
-import { evaluateRecommendation } from '@/api/agent'
+import { evaluateRecommendation, getAgentRecommendation } from '@/api/agent'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import { generateChatMessage } from '@/api/llm'
 
 interface TicketDetailProps {
   ticketId: number
@@ -78,7 +77,7 @@ export function TicketDetail({ ticketId, onClose, onTicketUpdate }: TicketDetail
     try {
       setIsLoadingRecommendation(true)
       console.log('Getting recommendation for ticket:', ticketId)
-      const result = await generateChatMessage(ticketId)
+      const result = await getAgentRecommendation(ticketId)
       console.log('Got recommendation result:', result)
       setRecommendation(result.recommendation)
       setMetricId(result.metricId)
