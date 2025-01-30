@@ -8,6 +8,7 @@ export class ArticleEntity implements Article {
   status: Article['status'];
   revision: number;
   author_id: number | null;
+  company_id: number;
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -21,6 +22,7 @@ export class ArticleEntity implements Article {
     this.status = data.status;
     this.revision = data.revision;
     this.author_id = data.author_id;
+    this.company_id = data.company_id;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
     this.published_at = data.published_at;

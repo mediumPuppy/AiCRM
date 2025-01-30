@@ -2,6 +2,7 @@ import { Router, RequestHandler } from 'express';
 import { ArticleRepository } from '../../repositories/implementations/ArticleRepository';
 import { supabase } from '../../lib/supabase';
 import { articleReadLimiter, articleWriteLimiter } from '../../middleware/rateLimiter';
+import { generateSlug } from '../../utils/slugify';
 
 const router = Router();
 const articleRepo = new ArticleRepository(supabase);
@@ -133,10 +134,28 @@ const createArticle: RequestHandler = async (req, res) => {
       return;
     }
 
+    let slug = generateSlug(title);
+    
+    // Check for existing slugs
+    const existingArticle = await articleRepo.findBySlug(company_id, slug);
+    if (existingArticle) {
+      let counter = 1;
+      let newSlug = slug;
+      while (await articleRepo.findBySlug(company_id, newSlug)) {
+        newSlug = `${slug}-${counter}`;
+        counter++;
+        // Prevent infinite loop
+        if (counter > 20) {
+          throw new Error('Could not generate unique slug after 20 attempts');
+        }
+      }
+      slug = newSlug;
+    }
+
     const article = await articleRepo.create({
       title,
       content,
-      slug: '',  // provide an empty or placeholder string for slug
+      slug,
       author_id,
       company_id,
       status,
@@ -189,6 +208,17 @@ const updateArticle: RequestHandler = async (req, res) => {
       return;
     }
 
+    // Validate required fields
+    if (title !== undefined && !title.trim()) {
+      res.status(400).json({ error: 'Title cannot be empty' });
+      return;
+    }
+
+    if (content !== undefined && !content.trim()) {
+      res.status(400).json({ error: 'Content cannot be empty' });
+      return;
+    }
+
     // Only allow certain status transitions
     if (status && existingArticle.status !== status) {
       const validTransitions: Record<string, string[]> = {
@@ -206,10 +236,34 @@ const updateArticle: RequestHandler = async (req, res) => {
       }
     }
 
+    // Generate new slug if title changed
+    let slug: string | undefined;
+    if (title && title !== existingArticle.title) {
+      slug = generateSlug(title);
+      
+      // Check if new slug already exists for this company
+      const slugExists = await articleRepo.findBySlug(existingArticle.company_id, slug);
+      if (slugExists && slugExists.id !== articleId) {
+        // Append a number to make the slug unique
+        let counter = 1;
+        let newSlug = slug;
+        while (await articleRepo.findBySlug(existingArticle.company_id, newSlug)) {
+          newSlug = `${slug}-${counter}`;
+          counter++;
+          // Prevent infinite loop
+          if (counter > 100) {
+            throw new Error('Could not generate unique slug');
+          }
+        }
+        slug = newSlug;
+      }
+    }
+
     const article = await articleRepo.update(articleId, {
       title,
       content,
       status,
+      ...(slug && { slug }),
       metadata: existingArticle.metadata || {}
     });
     res.json(article);
@@ -256,10 +310,10 @@ const publishArticle: RequestHandler = async (req, res) => {
       return;
     }
 
-    if (existingArticle.status === 'archived') {
+    if (existingArticle.status !== 'draft') {
       res.status(400).json({ 
-        error: 'Cannot publish archived article',
-        details: 'Article must be in draft status to be published'
+        error: 'Invalid publish attempt',
+        details: `Can only publish from draft status. Current status: ${existingArticle.status}`
       });
       return;
     }

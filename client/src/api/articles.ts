@@ -16,6 +16,7 @@ interface Article {
   status: 'draft' | 'published' | 'archived';
   revision: number;
   author_id: number | null;
+  company_id: number;
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -57,9 +58,16 @@ export async function getArticle(id: number): Promise<Article> {
   return data;
 }
 
-export async function saveArticle(id: number | undefined, data: { title: string; content: string; status: Article['status'] }): Promise<Article> {
-  const author_id = 1; // TODO: Get from auth context
-  const company_id = 1; // TODO: Get from auth context
+export async function saveArticle(id: number | undefined, data: { title: string; content?: string; status: Article['status'] }): Promise<Article> {
+  // Get current user and company from auth context
+  const auth = JSON.parse(localStorage.getItem('userData') || '{}');
+  const author_id = auth?.id;
+  const company_id = auth?.company_id;
+
+  if (!author_id || !company_id) {
+    throw new Error('User not authenticated');
+  }
+
   const slug = generateSlug(data.title);
   const payload = { ...data, author_id, company_id, slug };
   
@@ -67,14 +75,25 @@ export async function saveArticle(id: number | undefined, data: { title: string;
     const { data: response } = await axios.put(`/api/articles/${id}`, payload);
     return response;
   } else {
+    // For new articles, content is required
+    if (!data.content) {
+      throw new Error('Content is required for new articles');
+    }
     const { data: response } = await axios.post('/api/articles', payload);
     return response;
   }
 }
 
 export async function publishArticle(id: number | undefined, data: { title: string; content: string }): Promise<Article> {
-  const author_id = 1; // TODO: Get from auth context
-  const company_id = 1; // TODO: Get from auth context
+  // Get current user and company from auth context
+  const auth = JSON.parse(localStorage.getItem('userData') || '{}');
+  const author_id = auth?.id;
+  const company_id = auth?.company_id;
+
+  if (!author_id || !company_id) {
+    throw new Error('User not authenticated');
+  }
+
   const slug = generateSlug(data.title);
   
   if (typeof id === 'number') {

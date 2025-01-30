@@ -2,17 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { formatDate } from '@/utils/formatDate';
 import { Pagination } from '@/components/ui/pagination';
-
-interface Article {
-  id: number;
-  title: string;
-  status: 'draft' | 'published' | 'archived';
-  created_at: string;
-  updated_at: string;
-  author?: {
-    name: string;
-  };
-}
+import { Article } from '@/hooks/useArticleDetail';
 
 interface ArticlesTableProps {
   articles: {
@@ -57,7 +47,6 @@ export function ArticlesTable({
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Author</TableHead>
             <TableHead>Last Updated</TableHead>
             <TableHead>Created</TableHead>
           </TableRow>
@@ -77,14 +66,13 @@ export function ArticlesTable({
                   {article.status}
                 </Badge>
               </TableCell>
-              <TableCell>{article.author?.name || 'Unknown'}</TableCell>
               <TableCell>{formatDate(article.updated_at)}</TableCell>
               <TableCell>{formatDate(article.created_at)}</TableCell>
             </TableRow>
           ))}
           {articles.articles.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
                 No articles found
               </TableCell>
             </TableRow>

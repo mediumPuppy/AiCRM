@@ -16,6 +16,7 @@ import {
   IconLink,
   IconUnlink,
 } from '@tabler/icons-react';
+import React from 'react';
 
 interface TipTapEditorProps {
   content: string;
@@ -59,7 +60,22 @@ export function TipTapEditor({ content, onEditor, className = '' }: TipTapEditor
       },
     },
     autofocus: 'end',
+    editable: true,
   });
+
+  // Update editor content when content prop changes
+  React.useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || '<p></p>');
+    }
+  }, [editor, content]);
+
+  // Ensure editor stays editable
+  React.useEffect(() => {
+    if (editor && !editor.isEditable) {
+      editor.setEditable(true);
+    }
+  }, [editor]);
 
   if (!editor) {
     return null;

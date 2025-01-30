@@ -1,183 +1,207 @@
-import { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
-import { IconX } from '@tabler/icons-react';
-import { useArticleDetail } from '@/hooks/useArticleDetail';
 import { Editor } from '@tiptap/react';
-import { TipTapEditor } from '../editor/TipTapEditor';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+import { TipTapEditor } from '@/components/editor/TipTapEditor';
+import { useArticleDetail, Article } from '@/hooks/useArticleDetail';
+import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '../ui/alert-dialog';
+import { IconAlertCircle } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
-interface ArticleDetailProps {
-  articleId?: number;
-  isNew?: boolean;
-  onClose: () => void;
-  onArticleUpdate?: () => void;
-}
+export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpdate }: { articleId?: number; isNew?: boolean; onClose: () => void; onArticleUpdate?: () => void }) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState<Article['status']>('draft');
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-type ArticleStatus = 'draft' | 'published' | 'archived';
-
-export function ArticleDetail({ articleId, isNew, onClose, onArticleUpdate }: ArticleDetailProps) {
-  const { 
-    article, 
+  const {
+    article,
     isLoading,
     saveArticle,
     publishArticle,
     deleteArticle,
+    error: apiError
   } = useArticleDetail(articleId);
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [status, setStatus] = useState<ArticleStatus>('draft');
-  const [editor, setEditor] = useState<Editor | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  // Reset state when creating a new article
+  useEffect(() => {
+    if (isNew) {
+      setTitle('');
+      setContent('');
+      setStatus('draft');
+      setError(null);
+      if (editor) {
+        editor.commands.setContent('');
+      }
+    }
+  }, [isNew, editor]);
 
+  // Update state when article changes
   useEffect(() => {
     if (article && !isNew) {
       setTitle(article.title);
       setContent(article.content);
       setStatus(article.status);
+      editor?.commands.setContent(article.content);
+      setError(null);
     }
-  }, [article, isNew]);
+  }, [article, isNew, editor]);
+
+  // Handle API errors
+  useEffect(() => {
+    if (apiError) {
+      setError(apiError.message);
+    }
+  }, [apiError]);
 
   const handleSave = async () => {
-    if (!editor) return;
-    
-    setIsSaving(true);
+    if (!title.trim()) {
+      setError('Title is required');
+      return;
+    }
+
+    const currentContent = editor?.getHTML();
+    // Only validate content if we're actually changing it (editor is active)
+    if (editor && !currentContent?.trim()) {
+      setError('Content is required');
+      return;
+    }
+
     try {
-      await saveArticle({
-        title,
-        content: editor.getHTML(),
-        status,
-      });
+      // Only include fields that are actually changing
+      const updateData: {
+        title: string;
+        status: Article['status'];
+        content?: string;
+      } = {
+        title: title.trim(),
+        status
+      };
+
+      // Only include content if we're actually changing it
+      if (editor && currentContent !== article?.content) {
+        updateData.content = currentContent?.trim();
+      }
+
+      await saveArticle(updateData);
+      setError(null);
       onArticleUpdate?.();
-    } catch (error) {
-      console.error('Failed to save article:', error);
-    } finally {
-      setIsSaving(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save article');
     }
   };
 
   const handlePublish = async () => {
-    if (!editor) return;
-    
-    setIsPublishing(true);
+    if (!title.trim()) {
+      setError('Title is required');
+      return;
+    }
+
     try {
       await publishArticle({
-        title,
-        content: editor.getHTML(),
+        title: title.trim(),
+        content: editor?.getHTML() || ''
       });
       setStatus('published');
+      setError(null);
       onArticleUpdate?.();
-    } catch (error) {
-      console.error('Failed to publish article:', error);
-    } finally {
-      setIsPublishing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish article');
     }
   };
 
   const handleDelete = async () => {
     if (!articleId) return;
     
+    if (!window.confirm('Are you sure you want to delete this article?')) {
+      return;
+    }
+
     try {
       await deleteArticle(articleId);
+      setError(null);
       onArticleUpdate?.();
       onClose();
-    } catch (error) {
-      console.error('Failed to delete article:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete article');
     }
   };
 
   if (isLoading && !isNew) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <div className="animate-pulse">Loading article...</div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
-  return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b">
-        <div className="flex items-center min-w-0 gap-4">
-          <Input
-            type="text"
-            placeholder="Article Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="text-lg font-medium w-[300px]"
-          />
-          <Select value={status} onValueChange={(value: ArticleStatus) => setStatus(value)}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
-          <IconX className="h-4 w-4" />
-        </Button>
-      </div>
+  // Determine valid status transitions
+  const validTransitions = {
+    draft: ['published', 'archived'],
+    published: ['archived'],
+    archived: ['draft']
+  };
 
-      {/* Editor */}
-      <div className="flex-1 min-h-0 p-4">
-        <TipTapEditor
-          content={content}
-          onEditor={setEditor}
-          className="prose max-w-none h-full"
-          key={articleId}
+  const allowedStatuses = validTransitions[status] || [];
+
+  return (
+    <div className="space-y-4">
+      {error && (
+        <div className="px-4 py-2 bg-red-50 border-b border-red-100">
+          <div className="flex gap-2 items-center">
+            <IconAlertCircle className="h-4 w-4 text-red-600" />
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        </div>
+      )}
+      
+      <div className="space-y-2">
+        <Label htmlFor="title">Title</Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Article title"
         />
       </div>
 
-      {/* Footer Actions */}
-      <div className="border-t px-4 py-3 flex justify-between items-center">
-        <div>
-          {!isNew && (
-            <Button 
-              variant="destructive" 
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              Delete
-            </Button>
-          )}
+      <div className="space-y-2">
+        <Label>Content</Label>
+        <div className="min-h-[400px] border rounded-lg">
+          <TipTapEditor
+            content={content}
+            onEditor={setEditor}
+            className="prose max-w-none h-full"
+            key={`${articleId}-${isNew}-${Date.now()}`}
+          />
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Draft'}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="status">Status</Label>
+        <Select value={status} onValueChange={value => setStatus(value as Article['status'])}>
+          <SelectTrigger id="status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="published" disabled={!allowedStatuses.includes('published')}>Published</SelectItem>
+            <SelectItem value="archived" disabled={!allowedStatuses.includes('archived')}>Archived</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex gap-2">
+        <Button onClick={handleSave}>Save</Button>
+        {!isNew && status === 'draft' && (
+          <Button variant="secondary" onClick={handlePublish}>
+            Publish
           </Button>
-          <Button
-            onClick={handlePublish}
-            disabled={isPublishing || !title}
-          >
-            {isPublishing ? 'Publishing...' : 'Publish'}
+        )}
+        {!isNew && (
+          <Button variant="destructive" onClick={handleDelete}>
+            Delete
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

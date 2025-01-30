@@ -8,6 +8,7 @@ export type Article = {
   status: ArticleStatus;
   revision: number;
   author_id: number | null;
+  company_id: number;
   created_at: string;
   updated_at: string;
   published_at: string | null;

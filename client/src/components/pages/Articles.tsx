@@ -44,11 +44,11 @@ export default function Articles() {
               onPaginationChange={setPagination}
               onArticleSelect={(id) => {
                 setIsCreatingArticle(false);
-                if (id === selectedArticleId) {
-                  setSelectedArticleId(null);
-                } else {
+                // Force reset editor state
+                setSelectedArticleId(null);
+                setTimeout(() => {
                   setSelectedArticleId(id);
-                }
+                }, 50);
               }}
               selectedArticleId={selectedArticleId}
             />
