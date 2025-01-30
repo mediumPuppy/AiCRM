@@ -63,33 +63,41 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
       return;
     }
 
-    const currentContent = editor?.getHTML();
-    // Only validate content if we're actually changing it (editor is active)
-    if (editor && !currentContent?.trim()) {
-      setError('Content is required');
-      return;
+    // Validate status transition
+    if (article && status !== article.status) {
+      const validTransitions: Record<string, string[]> = {
+        draft: ['published', 'archived'],
+        published: ['archived'],
+        archived: ['draft']
+      };
+
+      if (!validTransitions[article.status]?.includes(status)) {
+        setError(`Cannot transition from ${article.status} to ${status}`);
+        return;
+      }
     }
 
     try {
-      // Only include fields that are actually changing
-      const updateData: {
-        title: string;
-        status: Article['status'];
-        content?: string;
-      } = {
-        title: title.trim(),
-        status
-      };
-
-      // Only include content if we're actually changing it
-      if (editor && currentContent !== article?.content) {
-        updateData.content = currentContent?.trim();
+      const currentContent = editor?.getHTML() || article?.content;
+      
+      // For existing articles, we must include the current content
+      if (!isNew && !currentContent) {
+        setError('Unable to save: Current content is missing');
+        return;
       }
 
+      const updateData = {
+        title: title.trim(),
+        status: isNew ? status : (article?.status || status), // Fallback to current status
+        content: currentContent
+      };
+
+      console.log('Saving article with data:', updateData);
       await saveArticle(updateData);
       setError(null);
       onArticleUpdate?.();
     } catch (err) {
+      console.error('Save error:', err);
       setError(err instanceof Error ? err.message : 'Failed to save article');
     }
   };

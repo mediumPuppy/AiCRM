@@ -214,7 +214,8 @@ const updateArticle: RequestHandler = async (req, res) => {
       return;
     }
 
-    if (content !== undefined && !content.trim()) {
+    // Only validate content if it's being explicitly set to empty
+    if (content === '') {
       res.status(400).json({ error: 'Content cannot be empty' });
       return;
     }

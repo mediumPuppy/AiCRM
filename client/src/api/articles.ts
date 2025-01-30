@@ -71,16 +71,33 @@ export async function saveArticle(id: number | undefined, data: { title: string;
   const slug = generateSlug(data.title);
   const payload = { ...data, author_id, company_id, slug };
   
-  if (typeof id === 'number') {
-    const { data: response } = await axios.put(`/api/articles/${id}`, payload);
-    return response;
-  } else {
-    // For new articles, content is required
-    if (!data.content) {
-      throw new Error('Content is required for new articles');
+  try {
+    if (typeof id === 'number') {
+      console.log('Sending PUT request to:', `/api/articles/${id}`, 'with payload:', payload);
+      const { data: response } = await axios.put(`/api/articles/${id}`, payload);
+      return response;
+    } else {
+      // For new articles, content is required
+      if (!data.content) {
+        throw new Error('Content is required for new articles');
+      }
+      console.log('Sending POST request to:', '/api/articles', 'with payload:', payload);
+      const { data: response } = await axios.post('/api/articles', payload);
+      return response;
     }
-    const { data: response } = await axios.post('/api/articles', payload);
-    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('API Error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+        payload: error.config?.data
+      });
+      throw new Error(error.response?.data?.error || error.message);
+    }
+    throw error;
   }
 }
 
