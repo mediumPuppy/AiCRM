@@ -59,23 +59,30 @@ export function TipTapEditor({ content, onEditor, className = '' }: TipTapEditor
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none max-w-none min-h-[200px] h-full',
       },
     },
-    autofocus: 'end',
+    autofocus: false,
     editable: true,
   });
 
   // Update editor content when content prop changes
   React.useEffect(() => {
     if (editor && content !== editor.getHTML()) {
+      const currentSelection = editor.state.selection;
       editor.commands.setContent(content || '<p></p>');
+      // Restore cursor position
+      editor.commands.setTextSelection(currentSelection.from);
     }
   }, [editor, content]);
 
-  // Ensure editor stays editable
+  // Ensure editor stays editable and notify parent
   React.useEffect(() => {
-    if (editor && !editor.isEditable) {
+    if (editor) {
       editor.setEditable(true);
+      onEditor(editor);
     }
-  }, [editor]);
+    return () => {
+      onEditor(null);
+    };
+  }, [editor, onEditor]);
 
   if (!editor) {
     return null;

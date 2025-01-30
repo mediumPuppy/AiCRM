@@ -63,20 +63,6 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
       return;
     }
 
-    // Validate status transition
-    if (article && status !== article.status) {
-      const validTransitions: Record<string, string[]> = {
-        draft: ['published', 'archived'],
-        published: ['archived'],
-        archived: ['draft']
-      };
-
-      if (!validTransitions[article.status]?.includes(status)) {
-        setError(`Cannot transition from ${article.status} to ${status}`);
-        return;
-      }
-    }
-
     try {
       const currentContent = editor?.getHTML() || article?.content;
       
@@ -88,8 +74,9 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
 
       const updateData = {
         title: title.trim(),
-        status: isNew ? status : (article?.status || status), // Fallback to current status
-        content: currentContent
+        content: currentContent,
+        // Only include status for new articles or if it's being changed to archived
+        status: isNew ? 'draft' : (status === 'archived' ? 'archived' : (article?.status || 'draft'))
       };
 
       console.log('Saving article with data:', updateData);
@@ -109,14 +96,21 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
     }
 
     try {
+      const currentContent = editor?.getHTML() || article?.content;
+      if (!currentContent) {
+        setError('Content is required to publish');
+        return;
+      }
+
       await publishArticle({
         title: title.trim(),
-        content: editor?.getHTML() || ''
+        content: currentContent
       });
       setStatus('published');
       setError(null);
       onArticleUpdate?.();
     } catch (err) {
+      console.error('Publish error:', err);
       setError(err instanceof Error ? err.message : 'Failed to publish article');
     }
   };
@@ -179,7 +173,6 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
             content={content}
             onEditor={setEditor}
             className="prose max-w-none h-full"
-            key={`${articleId}-${isNew}-${Date.now()}`}
           />
         </div>
       </div>
