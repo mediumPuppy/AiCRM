@@ -108,10 +108,7 @@ CREATE TRIGGER companies_updated_at
 BEFORE UPDATE
 ON public.companies
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- Add teams structure
 CREATE TABLE IF NOT EXISTS public.teams (
@@ -150,10 +147,7 @@ CREATE TRIGGER users_updated_at
 BEFORE UPDATE
 ON public.users
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 3. Contacts (or Leads) Table
@@ -183,10 +177,7 @@ CREATE TRIGGER contacts_updated_at
 BEFORE UPDATE
 ON public.contacts
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 4. Tickets (or Support Cases) Table
@@ -212,10 +203,7 @@ CREATE TRIGGER tickets_updated_at
 BEFORE UPDATE
 ON public.tickets
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 5. Notes Table (Optional for Extended CRM):
@@ -237,10 +225,7 @@ CREATE TRIGGER notes_updated_at
 BEFORE UPDATE
 ON public.notes
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 10. Attachments Table
@@ -264,10 +249,7 @@ CREATE TRIGGER attachments_updated_at
 BEFORE UPDATE
 ON public.attachments
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 11. Knowledge Base Articles
@@ -294,10 +276,7 @@ CREATE TRIGGER articles_updated_at
 BEFORE UPDATE
 ON public.articles
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 12. Portal Sessions
@@ -321,10 +300,7 @@ CREATE TRIGGER portal_sessions_updated_at
 BEFORE UPDATE
 ON public.portal_sessions
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 6. Webhooks Table
@@ -346,10 +322,7 @@ CREATE TRIGGER webhooks_updated_at
 BEFORE UPDATE
 ON public.webhooks
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 7. API Keys
@@ -371,10 +344,7 @@ CREATE TRIGGER api_keys_updated_at
 BEFORE UPDATE
 ON public.api_keys
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 8. Custom Fields
@@ -395,10 +365,7 @@ CREATE TRIGGER custom_fields_updated_at
 BEFORE UPDATE
 ON public.custom_fields
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 9. Custom Field Values
@@ -418,10 +385,7 @@ CREATE TRIGGER custom_field_values_updated_at
 BEFORE UPDATE
 ON public.custom_field_values
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- Add compound unique constraint for custom fields
 ALTER TABLE public.custom_fields 
@@ -471,10 +435,7 @@ CREATE TABLE IF NOT EXISTS public.chat_sessions (
 CREATE TRIGGER chat_sessions_updated_at
 BEFORE UPDATE ON public.chat_sessions
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- ============================================================================
 -- 14. Chat Messages
@@ -499,10 +460,7 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 CREATE TRIGGER chat_messages_updated_at
 BEFORE UPDATE ON public.chat_messages
 FOR EACH ROW
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
+EXECUTE FUNCTION public.update_timestamp();
 
 -- Add indexes for foreign keys and commonly filtered columns
 CREATE INDEX IF NOT EXISTS idx_contacts_status ON public.contacts(status);
