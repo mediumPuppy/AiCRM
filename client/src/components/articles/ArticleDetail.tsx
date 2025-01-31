@@ -64,18 +64,16 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
     }
 
     try {
-      const currentContent = editor?.getHTML() || article?.content;
+      const currentContent = editor?.getHTML();
       
-      // For existing articles, we must include the current content
-      if (!isNew && !currentContent) {
-        setError('Unable to save: Current content is missing');
+      if (isNew && !currentContent?.trim()) {
+        setError('Content is required for new articles');
         return;
       }
 
       const updateData = {
         title: title.trim(),
-        content: currentContent,
-        // Only include status for new articles or if it's being changed to archived
+        content: currentContent?.trim() || article?.content,
         status: isNew ? 'draft' : (status === 'archived' ? 'archived' : (article?.status || 'draft'))
       };
 
@@ -83,6 +81,11 @@ export function ArticleDetail({ articleId, isNew = false, onClose, onArticleUpda
       await saveArticle(updateData);
       setError(null);
       onArticleUpdate?.();
+      
+      // Close the editor after successful creation of new article
+      if (isNew) {
+        onClose();
+      }
     } catch (err) {
       console.error('Save error:', err);
       setError(err instanceof Error ? err.message : 'Failed to save article');

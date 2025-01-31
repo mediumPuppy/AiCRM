@@ -68,6 +68,19 @@ export async function saveArticle(id: number | undefined, data: { title: string;
     throw new Error('User not authenticated');
   }
 
+  // Validate required fields for new articles
+  if (!id) {
+    if (!data.title?.trim()) {
+      throw new Error('Title is required for new articles');
+    }
+    if (!data.content?.trim()) {
+      throw new Error('Content is required for new articles');
+    }
+    if (data.status !== 'draft') {
+      throw new Error('New articles must be created as drafts');
+    }
+  }
+
   const slug = generateSlug(data.title);
   const payload = { ...data, author_id, company_id, slug };
   
@@ -77,10 +90,6 @@ export async function saveArticle(id: number | undefined, data: { title: string;
       const { data: response } = await axios.put(`/api/articles/${id}`, payload);
       return response;
     } else {
-      // For new articles, content is required
-      if (!data.content) {
-        throw new Error('Content is required for new articles');
-      }
       console.log('Sending POST request to:', '/api/articles', 'with payload:', payload);
       const { data: response } = await axios.post('/api/articles', payload);
       return response;
@@ -93,9 +102,11 @@ export async function saveArticle(id: number | undefined, data: { title: string;
         data: error.response?.data,
         url: error.config?.url,
         method: error.config?.method,
-        payload: error.config?.data
+        payload: error.config?.data,
+        error: error.response?.data?.error,
+        details: error.response?.data?.details
       });
-      throw new Error(error.response?.data?.error || error.message);
+      throw new Error(error.response?.data?.error || error.response?.data?.details || error.message);
     }
     throw error;
   }
